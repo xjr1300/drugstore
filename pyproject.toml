@@ -1,0 +1,45 @@
+[tool.poetry]
+name = "drugstore"
+version = "0.1.0"
+description = ""
+authors = ["xjr1300.04 <xjr1300.04@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+
+# ターゲットバージョン
+target-version = "py312"
+
+# モジュールディレクトリとテストディレクトリ
+src = ["my_package", "tests"]
+
+# 1行の最大文字数
+line-length = 88
+
+[tool.ruff.lint]
+select = [
+  "F", # pyflakes
+  "E", # pycodestyle
+  "W", # pycodestyle warnings
+  "I", # isort
+  "D", # pydocstyle
+]
+
+ignore = [
+  "D100", # undocumented-public-module
+  "D104", # undocumented-public-package
+  "D415", # ends-in-punctuation
+]
+
+extend-ignore = []
+
+[tool.ruff.lint.pydocstyle]
+# docstringはgoogle style
+convention = "google"
