@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import List, Optional, Self, Tuple
+from typing import Any, List, Optional, Self, Tuple
 
 
 class MembershipTypeCode(Enum):
@@ -58,6 +58,30 @@ class MembershipType:
             raise ValueError("会員区分コードと会員区分名の組み合わせが不正です。")
         self.code = data[0]
         self.name = data[1]
+
+    def __eq__(self, other: Any) -> bool:
+        """会員区分が一致するか確認する。
+
+        Args:
+            other (Self): 比較するインスタンス
+
+        Returns:
+            bool: 一致する場合はTrue、一致しない場合はFalse
+        """
+        if not isinstance(other, MembershipType):
+            return False
+        return self.code == other.code and self.name == other.name
+
+    def __ne__(self, other: Any) -> bool:
+        """会員区分が一致しないことを確認する。
+
+        Args:
+            other (Self): 比較するインスタンス
+
+        Returns:
+            bool: 一致しない場合はTrue、一致する場合はFalse
+        """
+        return not self == other
 
     @classmethod
     def general_membership_type(cls) -> Self:
