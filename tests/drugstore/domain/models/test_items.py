@@ -100,3 +100,12 @@ class ItemTest(unittest.TestCase):
         # 実行と検証
         with self.assertRaises(ValueError):
             _ = Item(id, name, unit_price)
+
+
+def create_seirogan() -> Item:
+    """正露丸を作成する。
+
+    Returns:
+        Item: 正露丸を表現する商品
+    """
+    return Item(uuid.uuid4(), "正露丸", Decimal("300.0"))
