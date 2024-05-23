@@ -1,14 +1,104 @@
 import unittest
+import uuid
+from datetime import datetime
+from decimal import Decimal
+
+from drugstore.common import JST
+from drugstore.domain.models.consumption_taxes import ConsumptionTax
 
 
-class ConsumptionTax(unittest.TestCase):
-    """消費税テストクラス
+class ConsumptionTaxTest(unittest.TestCase):
+    """消費税テストクラス"""
 
-    - 妥当な属性で消費税をインスタンス化できることを確認
-    - 消費税の起点日時または終点日時が日本標準時でない場合に、消費税をインスタンス化できないことを確認
-    - 消費税の起点日時が範囲外の場合に、消費税率をインスタンス化できないことを確認
-    - 消費税の終点日時が範囲外の場合に、消費税率をインスタンス化できないことを確認
-    - 消費税の起点日時が終点日時以降の場合に、消費税率をインスタンス化できないことを確認
-    - 消費税の税率が0より小さい場合に、消費税率をインスタンス化できないことを確認
-    - 消費税の税率が1以上の場合に、消費税率をインスタンス化できないことを確認
-    """  # noqa: E501
+    def test_instantiate_by_valid_attrs(self) -> None:
+        """妥当な属性で消費税をインスタンス化できることを確認"""
+        id = uuid.uuid4()
+        begin = datetime(2024, 1, 1, 0, 0, 0, tzinfo=JST)
+        end = datetime.max.replace(tzinfo=JST)
+        rate = Decimal("0.10")
+
+        sut = ConsumptionTax(id, begin, end, rate)
+
+        self.assertEqual(begin, sut.begin)
+        self.assertEqual(end, sut.end)
+        self.assertEqual(rate, sut.rate)
+
+    def test_can_not_instantiate_by_terms_are_not_jst(self) -> None:
+        """起点日時または終点日時が日本標準時でない場合に、消費税をインスタンス化できないことを確認"""
+        data = [
+            (uuid.uuid4(), datetime(2024, 1, 1, 0, 0, 0), datetime.max),
+            (uuid.uuid4(), datetime(2024, 1, 1, 0, 0, 0, tzinfo=JST), datetime.max),
+            (
+                uuid.uuid4(),
+                datetime(2024, 1, 1, 0, 0, 0),
+                datetime.max.replace(tzinfo=JST),
+            ),
+        ]
+        rate = Decimal("0.10")
+
+        for id, begin, end in data:
+            with self.assertRaises(ValueError):
+                _ = ConsumptionTax(id, begin, end, rate)
+
+    def test_can_not_instantiate_by_begin_is_out_of_range(self) -> None:
+        """最も過去の起点日時と最も将来の終点日時の消費税をインスタンス化できることを確認
+
+        本来であれば、最も過去の起点日時よりも前の起点日時を持つ消費税をインスタンス化できないことを
+        確認するべきだが、そのような起点日時をdatetime型が表現できないため、最も過去の起点日時を
+        もつ消費税をインスタンス化できることを確認するテストにした。
+        これは、最も将来の終点日時についても同様である。
+        """
+        id = uuid.uuid4()
+        begin = datetime.min.replace(tzinfo=JST)
+        end = datetime.max.replace(tzinfo=JST)
+        rate = Decimal("0.10")
+
+        sut = ConsumptionTax(id, begin, end, rate)
+
+        self.assertEqual(begin, sut.begin)
+        self.assertEqual(end, sut.end)
+
+    def test_can_not_instantiate_by_begin_is_greater_than_or_equal_to_end(
+        self,
+    ) -> None:
+        """起点日時が終点日時以降の場合に、消費税をインスタンス化できないことを確認"""
+        data = [
+            (
+                uuid.uuid4(),
+                datetime(2024, 1, 1, 0, 0, 0, tzinfo=JST),
+                datetime(2024, 1, 1, 0, 0, 0, tzinfo=JST),
+            ),
+            (
+                uuid.uuid4(),
+                datetime(2024, 1, 1, 0, 0, 1, tzinfo=JST),
+                datetime(2024, 1, 1, 0, 0, 0, tzinfo=JST),
+            ),
+        ]
+        rate = Decimal("0.10")
+
+        for id, begin, end in data:
+            with self.assertRaises(ValueError):
+                _ = ConsumptionTax(id, begin, end, rate)
+
+    def test_can_not_instantiate_by_rate_is_less_than_zero(
+        self,
+    ) -> None:
+        """消費税の税率が0.0より小さい場合に、消費税をインスタンス化できないことを確認"""
+        id = uuid.uuid4()
+        begin = datetime(2024, 1, 1, 0, 0, 0, tzinfo=JST)
+        end = datetime.max.replace(tzinfo=JST)
+        rate = Decimal("-0.01")
+
+        with self.assertRaises(ValueError):
+            _ = ConsumptionTax(id, begin, end, rate)
+
+    def test_can_not_instantiate_by_rate_is_greater_equal_one(self) -> None:
+        """消費税の税率が1.0以上の場合に、消費税をインスタンス化できないことを確認"""
+        id = uuid.uuid4()
+        begin = datetime(2024, 1, 1, 0, 0, 0, tzinfo=JST)
+        end = datetime.max.replace(tzinfo=JST)
+        rates = [Decimal("1.0"), Decimal("1.01")]
+
+        with self.assertRaises(ValueError):
+            for rate in rates:
+                _ = ConsumptionTax(id, begin, end, rate)
