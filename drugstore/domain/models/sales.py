@@ -21,6 +21,24 @@ class SaleDetail:
     # 小計
     amount: Decimal
 
+    def __init__(self, id: uuid.UUID, item: Item, quantities: int) -> None:
+        """イニシャライザ
+
+        Args:
+            id (uuid.UUID): 売上ID
+            item (Item): 商品
+            quantities (int): 数量
+
+        Raises:
+            ValueError: 販売明細の数量が0以下です。
+        """
+        if quantities <= 0:
+            raise ValueError("販売明細の数量が0以下です。")
+        self.id = id
+        self.item = item
+        self.quantities = quantities
+        self.amount = item.unit_price * quantities
+
 
 @dataclass
 class Sale:
