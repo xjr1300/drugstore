@@ -27,3 +27,19 @@ class MembershipType:
     code: int
     # 会員区分名
     name: str
+
+    def __init__(self, code: int, name: str) -> None:
+        """イニシャライザ
+
+        Args:
+            code (int): 会員区分コード
+            name (str): 会員区分名
+
+        Raises:
+            ValueError: 会員区分コードと会員区分名の組み合わせが不正です。
+        """
+        data = (code, name.strip())
+        if data not in MEMBERSHIP_TYPE_DATA:
+            raise ValueError("会員区分コードと会員区分名の組み合わせが不正です。")
+        self.code = data[0]
+        self.name = data[1]
