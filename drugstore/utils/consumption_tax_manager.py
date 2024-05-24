@@ -9,10 +9,27 @@ def ensure_consumption_tax_periods_are_continuous(taxes: List[ConsumptionTax]) -
     Args:
         taxes (List[ConsumptionTax]): 消費税のリスト
 
+    Raises:
+        ValueError: 消費税リストは1つ以上の消費税を格納していなければなりません。
+
     Returns:
         bool: 消費税の期間が重複または途切れなく連続している場合はTrue、
             連続していない場合はFalse
     """
+    if len(taxes) == 0:
+        raise ValueError(
+            "消費税リストは1つ以上の消費税を格納していなければなりません。"
+        )
+    if len(taxes) == 1:
+        return True
+    end = taxes[0].end
+    index = 1
+    while index < len(taxes):
+        if taxes[index].begin != end:
+            return False
+        end = taxes[index].end
+        index += 1
+    return True
 
 
 class ConsumptionTaxManager:
