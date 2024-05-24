@@ -3,6 +3,18 @@ from typing import List
 from ..domain.models.consumption_taxes import ConsumptionTax
 
 
+def ensure_consumption_tax_periods_are_continuous(taxes: List[ConsumptionTax]) -> bool:
+    """消費税の期間が重複または途切れなく連続しているか確認する。
+
+    Args:
+        taxes (List[ConsumptionTax]): 消費税のリスト
+
+    Returns:
+        bool: 消費税の期間が重複または途切れなく連続している場合はTrue、
+            連続していない場合はFalse
+    """
+
+
 class ConsumptionTaxManager:
     """消費税管理者クラス"""
 
@@ -20,3 +32,5 @@ class ConsumptionTaxManager:
         Raises:
             ValueError: 消費税管理者クラスは1つ以上の消費税を受け取ります。
         """
+        if len(consumption_taxes) == 0:
+            raise ValueError("消費税管理者クラスは1つ以上の消費税を受け取ります。")
