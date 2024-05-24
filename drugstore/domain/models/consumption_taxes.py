@@ -2,6 +2,7 @@ import uuid
 from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
+from typing import Self
 
 from drugstore.common import JST
 
@@ -58,3 +59,19 @@ class ConsumptionTax:
         self.begin = begin
         self.end = end
         self.rate = rate
+
+    def contains(self, other: Self) -> bool:
+        """消費税の期間が引数で与えられた消費税の期間を含むか確認する。
+
+        Args:
+            other (Self): 消費税
+
+        Returns:
+            bool: 消費税の期間が引数で与えられた消費税の期間を含む場合True、
+                含まない場合はFalse
+        """
+        if other.begin < self.begin:
+            return False
+        if self.end < other.end:
+            return False
+        return True

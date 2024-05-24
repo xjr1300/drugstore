@@ -102,3 +102,80 @@ class ConsumptionTaxTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             for rate in rates:
                 _ = ConsumptionTax(id, begin, end, rate)
+
+    def test_contains(self) -> None:
+        """containsメソッドが正しく判定するか確認"""
+        target = ConsumptionTax(
+            uuid.uuid4(),
+            datetime(2024, 4, 1, tzinfo=JST),
+            datetime(2024, 5, 1, tzinfo=JST),
+            Decimal("0.1"),
+        )
+        data_list = [
+            (
+                True,
+                ConsumptionTax(
+                    uuid.uuid4(),
+                    datetime(2024, 4, 1, tzinfo=JST),
+                    datetime(2024, 5, 1, tzinfo=JST),
+                    Decimal("0.1"),
+                ),
+            ),
+            (
+                True,
+                ConsumptionTax(
+                    uuid.uuid4(),
+                    datetime(2024, 4, 2, tzinfo=JST),
+                    datetime(2024, 5, 1, tzinfo=JST),
+                    Decimal("0.1"),
+                ),
+            ),
+            (
+                True,
+                ConsumptionTax(
+                    uuid.uuid4(),
+                    datetime(2024, 4, 1, tzinfo=JST),
+                    datetime(2024, 4, 30, tzinfo=JST),
+                    Decimal("0.1"),
+                ),
+            ),
+            (
+                True,
+                ConsumptionTax(
+                    uuid.uuid4(),
+                    datetime(2024, 4, 2, tzinfo=JST),
+                    datetime(2024, 4, 30, tzinfo=JST),
+                    Decimal("0.1"),
+                ),
+            ),
+            (
+                False,
+                ConsumptionTax(
+                    uuid.uuid4(),
+                    datetime(2024, 3, 31, tzinfo=JST),
+                    datetime(2024, 5, 1, tzinfo=JST),
+                    Decimal("0.1"),
+                ),
+            ),
+            (
+                False,
+                ConsumptionTax(
+                    uuid.uuid4(),
+                    datetime(2024, 4, 1, tzinfo=JST),
+                    datetime(2024, 5, 2, tzinfo=JST),
+                    Decimal("0.1"),
+                ),
+            ),
+            (
+                False,
+                ConsumptionTax(
+                    uuid.uuid4(),
+                    datetime(2024, 3, 31, tzinfo=JST),
+                    datetime(2024, 5, 2, tzinfo=JST),
+                    Decimal("0.1"),
+                ),
+            ),
+        ]
+        for data in data_list:
+            result = target.contains(data[1])
+            self.assertEqual(data[0], result, f"{data[1].begin}, {data[1].end}")
