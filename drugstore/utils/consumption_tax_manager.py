@@ -1,5 +1,7 @@
+import bisect
+import uuid
 from operator import attrgetter
-from typing import List
+from typing import Callable, List
 
 from ..domain.models.consumption_taxes import (
     MAX_CONSUMPTION_TAX_END,
@@ -12,7 +14,7 @@ def ensure_consumption_tax_periods_are_continuous(taxes: List[ConsumptionTax]) -
     """消費税の期間が重複または途切れなく連続しているか確認する。
 
     Args:
-        taxes (List[ConsumptionTax]): 消費税のリスト
+        taxes (List[ConsumptionTax]): 消費税リスト
 
     Raises:
         ValueError: 消費税リストは1つ以上の消費税を格納していなければなりません。
@@ -50,13 +52,13 @@ class ConsumptionTaxManager:
     def __init__(self, consumption_taxes: List[ConsumptionTax]) -> None:
         """イニシャライザ
 
-        1. 消費税のリストを起点日時でソート
+        1. 消費税リストを起点日時でソート
         2. 消費税リストに消費税の期間が重複または途切れなく連続しているか確認
         3. 先頭の消費税の起点日時に起点日時の最小値を設定
         4. 最後の消費税の終点日時に終点日時の最大値を設定
 
         Args:
-            consumption_taxes (List[ConsumptionTax]): 消費税のリスト
+            consumption_taxes (List[ConsumptionTax]): 消費税リスト
 
         Raises:
             ValueError: 消費税管理者クラスは1つ以上の消費税を受け取ります。
@@ -70,3 +72,166 @@ class ConsumptionTaxManager:
         consumption_taxes[0].begin = MIN_CONSUMPTION_TAX_BEGIN
         consumption_taxes[-1].end = MAX_CONSUMPTION_TAX_END
         self.consumption_taxes = consumption_taxes
+
+    def add_consumption_tax(self, addition: ConsumptionTax) -> None:
+        """消費税リストに消費税を追加する。
+
+        消費税リストに追加する消費税を含む消費税が存在するか確認する。
+        リスト内にそのような消費税が存在する場合は、次を実行する。
+            -   既存の消費税の起点日時と追加する消費税の起点日時が異なる場合、既存の
+                消費税の起点日時を起点日時、追加する消費税の起点日時を終点日時、既存
+                の消費税の税率にした消費税を作成する。
+            -   追加する消費税は何もしない。
+            -   追加する消費税の終点日時と既存の消費税の終点日時が異なる場合、追加する
+                消費税の終点日時を起点日時、既存の消費税の終点日時を終点日時、既存の
+                消費税の税率にした消費税を作成する。
+            -   その後、上記1から3つの消費税を、消費税リストの適切な位置に挿入する。
+        リスト内にそのような消費税が存在しない場合は、次を実行する。
+            -   追加する消費税の起点日時と終点日時に含まれる消費税をすべて削除する。
+            -   追加する消費税より前後の消費税と、新しく追加する消費税の期間が途切れない
+                ように、前後の消費税の終点日時または起点日時を、新しく追加する消費税の起
+                点日時または終点日時にする。
+            -   新しく追加する消費税より前の消費税がない場合は、新しく追加する消費税の
+                起点日時を`MIN_CONSUMPTION_TAX_BEGIN`に変更する。
+            -   新しく追加する消費税より後の消費税がない場合は、新しく追加する消費税の
+                終点日時を`MAX_CONSUMPTION_TAX_END`に変更する。
+
+        TODO: 次の単体テストを実装する。
+        - 消費税リストに追加する消費税(a)の期間を含む消費税(e)が存在する
+            - 追加する消費税の期間と既存の消費税の期間が完全に含まれる
+                - e.begin < a.begin, a.end < e.end
+            - 追加する消費税の期間と既存の消費税の期間が完全に一致
+                - e.begin == a.begin, a.end == e.end
+            - 追加する消費税の起点日時と既存の消費税の起点日時が等しい
+                - e.begin == a.begin, a.end < e.end
+            - 追加する消費税の終点日時と既存の消費税の終点日時が等しい
+                - e.begin < a.begin, a.end == e.end
+        - 消費税リストに追加する消費税の期間を含む消費税が存在しない
+            - 消費税リストに追加する消費税の期間に含まれる消費税が存在する
+            - 消費税リストに追加する消費税の期間に含まれる消費税が存在しない
+
+        Args:
+            addition (ConsumptionTax): 追加する消費税
+        """
+        # 追加する消費税の期間を含む消費税が消費税リストに存在するか確認
+        index = retrieve_contained_consumption_tax_index(
+            self.consumption_taxes, addition
+        )
+        if 0 <= index:
+            # 追加する消費税の期間を含む消費税が消費税リストに存在する場合
+            taxes = generate_consumption_taxes_for_included_addition(
+                self.consumption_taxes, index, addition
+            )
+        else:
+            # 追加する消費税の期間を含む消費税が消費税リストに存在しない場合
+            taxes = generate_consumption_taxes_for_overlapped_addition(
+                self.consumption_taxes, addition
+            )
+        # 消費税リストメンバ変数を設定
+        self.consumption_taxes = taxes
+
+
+def retrieve_contained_consumption_tax_index(
+    taxes: List[ConsumptionTax], tax: ConsumptionTax
+) -> int:
+    """消費税リストに引数の消費税の期間を含む消費税のインデックスを取得する。
+
+    Args:
+        taxes (List[ConsumptionTax]): 消費税リスト
+        tax (ConsumptionTax): 消費税
+
+    Returns:
+        int: 消費税リストのインデックス
+            そのような消費税が消費税リストに存在しない場合は-1
+    """
+    for index, tax_in_list in enumerate(taxes):
+        if tax_in_list.contains(tax):
+            return index
+    return -1
+
+
+def generate_consumption_taxes_for_included_addition(
+    taxes: List[ConsumptionTax], index: int, addition: ConsumptionTax
+) -> List[ConsumptionTax]:
+    """追加する消費税の期間を含む消費税が消費税リストに存在する場合に、消費税を消費税リストに追加する。
+
+    Args:
+        taxes (List[ConsumptionTax]): 消費税リスト
+        index (int): 追加する消費税の期間を含む消費税リストの消費税のインデックス
+        addition (ConsumptionTax): 追加する消費税
+
+    Returns:
+        List[ConsumptionTax]: 追加後の消費税リスト
+    """
+    new_taxes: List[ConsumptionTax] = []
+    container = taxes[index]
+    # 既存の消費税の起点日時と追加する消費税の起点日時が異なる場合、既存の消費税の
+    # 起点日時を起点日時、追加する消費税の起点日時を終点日時、既存の消費税の税率に
+    # した消費税を追加
+    if container.begin < addition.begin:
+        new_taxes.append(
+            ConsumptionTax(
+                uuid.uuid4(),
+                container.begin,
+                addition.begin,
+                container.rate,
+            )
+        )
+    # 追加する消費税を追加
+    new_taxes.append(addition)
+    # 追加する消費税の終点日時と既存の消費税の終点日時が異なる場合、追加する消費税の
+    # 終点日時を起点日時、既存の消費税の終点日時を終点日時、既存の消費税の税率にした
+    # 消費税を追加
+    if addition.end < container.end:
+        new_taxes.append(
+            ConsumptionTax(
+                uuid.uuid4(),
+                addition.end,
+                container.end,
+                container.rate,
+            )
+        )
+    # 追加する消費税を含む消費税リストの消費税を、新しく追加する最初の消費税で入れ替え
+    taxes[index] = new_taxes[0]
+    index += 1
+    # 新しく追加する消費税を順に挿入
+    for tax in new_taxes[1:]:
+        taxes.insert(index, tax)
+        index += 1
+    return taxes
+
+
+def generate_consumption_taxes_for_overlapped_addition(
+    taxes: List[ConsumptionTax], addition: ConsumptionTax
+) -> List[ConsumptionTax]:
+    """追加する消費税の期間を含む消費税が消費税リストに存在しない場合に、消費税を消費税リストに追加する。
+
+    Args:
+        taxes (List[ConsumptionTax]): 消費税リスト
+        addition (ConsumptionTax): 追加する消費税
+
+    Returns:
+        List[ConsumptionTax]: 追加後の消費税リスト
+    """
+    # 追加する消費税の期間に含まれる消費税を消費税リストから削除
+    # filter関数で追加する消費税の期間に含まれない消費税を消費税リストから抽出した
+    # リスト作成することで、実質的に、追加する消費税の期間に含まれる消費税を消費税
+    # リストから削除
+    func: Callable[[ConsumptionTax], bool] = lambda t: not addition.contains(  # noqa: E731
+        t
+    )
+    taxes = list(filter(func, taxes))
+    # 消費税リストに消費税を追加
+    index = bisect.bisect_left(taxes, addition.begin, key=attrgetter("begin"))
+    taxes.insert(index, addition)
+    # 挿入した位置の前の消費税の終点日時を変更
+    if 1 < index:
+        taxes[index - 1].end = addition.begin
+    # 挿入した位置の後ろの消費税の終点日時を変更
+    if index < len(taxes) - 1:
+        taxes[index + 1].begin = addition.end
+    # 消費税リストの最初の消費税の起点日時を起点日時の最小値に設定
+    taxes[0].begin = MIN_CONSUMPTION_TAX_BEGIN
+    # 消費税リストの最後の消費税の終点日時を終点日時の最大値に設定
+    taxes[-1].end = MAX_CONSUMPTION_TAX_END
+    return taxes
