@@ -1,12 +1,18 @@
+import copy
+import random
 import unittest
 import uuid
 from datetime import datetime, timedelta
 from decimal import Decimal
 
 from drugstore.common import JST
-from drugstore.domain.models.consumption_taxes import ConsumptionTax
+from drugstore.domain.models.consumption_taxes import (
+    MAX_CONSUMPTION_TAX_END,
+    MIN_CONSUMPTION_TAX_BEGIN,
+    ConsumptionTax,
+)
 from drugstore.utils.consumption_tax_manager import (
-    ensure_consumption_tax_periods_are_continuous,
+    ConsumptionTaxManager,
 )
 
 # 連続した消費税のリスト
@@ -38,19 +44,30 @@ CONTINUOUS_CONSUMPTION_TAXES = [
 ]
 
 
-class ConsumptionTaxesTest(unittest.TestCase):
-    """消費税リストテスト"""
+class ConsumptionTaxManagerTest(unittest.TestCase):
+    """消費税管理者クラステスト
 
-    def test_ensure_consumption_taxes_are_continuous(self) -> None:
-        """消費税の期間が重複または途切れなく連続している場合に、期間が連続していると判定することを確認"""
-        result = ensure_consumption_tax_periods_are_continuous(
-            CONTINUOUS_CONSUMPTION_TAXES
-        )
+    次の不変条件が成立することを確認する。
 
-        self.assertTrue(result)
+    - 消費税リストの要素数は1以上
+    - 消費税リストの消費税の期間に重複または途切れがない
+    - 消費税リストに含まれる消費税の全期間は、MIN_CONSUMPTION_TAX_BEGINからMAX_CONSUMPTION_TAX_ENDまで
+    """  # noqa: E501
 
-    def test_ensure_one_consumption_taxes_is_continuous(self) -> None:
-        """1つの消費税を期間が連続していると判定することを確認"""
+    def test_instantiate_by_list_contains_continuous_consumption_taxes(self) -> None:
+        """期間が連続した消費税のリストが渡されたとき、インスタンスを構築できることを確認"""
+        # 連続した消費税リストをランダムに並び替え
+        taxes = copy.deepcopy(CONTINUOUS_CONSUMPTION_TAXES)
+        random.shuffle(taxes)
+
+        sut = ConsumptionTaxManager(taxes)
+
+        self.assertGreaterEqual(len(sut.consumption_taxes), 1)
+        self.assertEqual(MIN_CONSUMPTION_TAX_BEGIN, sut.consumption_taxes[0].begin)
+        self.assertEqual(MAX_CONSUMPTION_TAX_END, sut.consumption_taxes[-1].end)
+
+    def test_instantiate_by_list_contains_one_consumption_tax(self) -> None:
+        """1つの消費税を格納した消費税のリストが渡されたとき、インスタンス化できることを確認"""
         taxes = [
             ConsumptionTax(
                 uuid.uuid4(),
@@ -60,45 +77,30 @@ class ConsumptionTaxesTest(unittest.TestCase):
             ),
         ]
 
-        result = ensure_consumption_tax_periods_are_continuous(taxes)
+        sut = ConsumptionTaxManager(taxes)
 
-        self.assertTrue(result)
+        self.assertGreaterEqual(len(sut.consumption_taxes), 1)
+        self.assertEqual(MIN_CONSUMPTION_TAX_BEGIN, sut.consumption_taxes[0].begin)
+        self.assertEqual(MAX_CONSUMPTION_TAX_END, sut.consumption_taxes[-1].end)
 
-    def test_ensure_consumption_taxes_with_interrupted_periods_are_not_continuous(
+    def test_can_not_instantiate_by_consumption_tax_list_that_is_not_continuous(
         self,
     ) -> None:
-        """期間が途切れている消費税のリストを、期間が連続していないと判定することを確認"""
-        taxes = CONTINUOUS_CONSUMPTION_TAXES.copy()
+        """期間が途切れている消費税のリストが渡されたとき、インスタンス化できないことを確認"""
+        taxes = copy.deepcopy(CONTINUOUS_CONSUMPTION_TAXES)
         # 2番目の消費税を削除して、期間を途切れさせる
         del taxes[1]
 
-        result = ensure_consumption_tax_periods_are_continuous(taxes)
+        with self.assertRaises(ValueError):
+            _ = ConsumptionTaxManager(taxes)
 
-        self.assertFalse(result)
-
-    def test_ensure_consumption_taxes_with_overlapped_periods_are_not_continuous(
+    def test_can_not_instantiate_by_consumption_tax_list_that_period_is_overlapped(
         self,
     ) -> None:
-        """期間が重複している消費税のリストを、期間が連続していないと判定することを確認"""
-        taxes = CONTINUOUS_CONSUMPTION_TAXES.copy()
+        """期間が重複している消費税のリストが渡されたとき、インスタンス化できないことを確認"""
+        taxes = copy.deepcopy(CONTINUOUS_CONSUMPTION_TAXES)
         # 最初と次の消費税の期間を重複させる
         taxes[1].begin = taxes[1].begin - timedelta(seconds=1)
 
-        result = ensure_consumption_tax_periods_are_continuous(taxes)
-
-        self.assertFalse(result)
-
-
-class ConsumptionTaxManagerTest(unittest.TestCase):
-    """消費税管理者クラステスト
-
-    # TODO: 次の単体テストを実装すること
-
-    - イニシャライザ
-        - 消費税管理クラスを構築したとき、次の不変条件を満たしているか確認
-            - 1つ以上の消費税を管理していること
-            - 消費税の期間が連続していること
-            - 起点日時が最も大きい消費税の終点日時が終点日時の最大値になっていること
-        - 空の消費税のリストを受け取った場合、ValueError例外をスローすること
-        - 消費税の期間が連続していない場合、ValueError例外をスローすること
-    """
+        with self.assertRaises(ValueError):
+            _ = ConsumptionTaxManager(taxes)
