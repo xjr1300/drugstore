@@ -1,10 +1,11 @@
 import bisect
 import uuid
+from datetime import datetime
 from decimal import Decimal
 from operator import attrgetter
 from typing import Callable, List, Optional
 
-from ..domain.models.consumption_taxes import (
+from drugstore.domain.models.consumption_taxes import (
     MAX_CONSUMPTION_TAX_END,
     MIN_CONSUMPTION_TAX_BEGIN,
     ConsumptionTax,
@@ -73,6 +74,29 @@ class ConsumptionTaxManager:
         consumption_taxes[0].begin = MIN_CONSUMPTION_TAX_BEGIN
         consumption_taxes[-1].end = MAX_CONSUMPTION_TAX_END
         self.consumption_taxes = consumption_taxes
+
+    def consumption_tax_rate(self, dt: datetime) -> Decimal:
+        """引数で指定された日時に適用される消費税の税率を返す。
+
+        Args:
+            dt (datetime): 日時
+
+        Raises:
+            ValueError: 日本標準時の日時を指定してください。
+            ValueError: 消費税の税率が管理されていない日時です。
+            RuntimeError: 消費税の税率を返すときに想定していないエラーが発生しました。
+
+        Returns:
+            Decimal: 消費税の税率
+
+        TODO: 次の単体テストを実装
+        - ある消費税の起点日時と終点日時の間の日時を指定したとき、その消費税の税率が返されることを確認
+        - ある消費税の起点日時を指定したとき、その消費税の税率が返されることを確認
+        - ある消費税の終点日時を指定したとき、その次の消費税の税率が返されることを確認
+        - 起点日時の最小値を指定したとき、最初の消費税の税率が返されることを確認
+        - 日本標準時でない日時を指定したとき、例外がスローされることを確認
+        - 終点日時の最大値を指定したとき、例外がスローされることを確認
+        """  # noqa: E501
 
     def add_consumption_tax(self, addition: ConsumptionTax) -> None:
         """消費税リストに消費税を追加する。
