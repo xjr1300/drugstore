@@ -4,6 +4,8 @@ from datetime import datetime
 from decimal import Decimal
 from typing import List, Optional
 
+from drugstore.common import is_jst_datetime
+from drugstore.domain.models.consumption_taxes import validate_consumption_tax_rate
 from drugstore.domain.models.customers import Customer
 from drugstore.domain.models.items import Item
 
@@ -25,7 +27,7 @@ class SaleDetail:
         """イニシャライザ
 
         Args:
-            id (uuid.UUID): 売上ID
+            id: (uuid.UUID): 売上ID
             item (Item): 商品
             quantities (int): 数量
 
@@ -80,9 +82,27 @@ class Sale:
             sold_at (datetime): 売上日時
             consumption_tax_rate (Decimal): 消費税率
 
+        Raises:
+            ValueError: 売上日は日本標準時で指定してください。
+            ValueError: 消費税の税率が0.0未満または1.0以上です。
+
         TODO: 次の単体テストを実装
 
         - 妥当な引数でインスタンスを構築できることを確認
         - 売上日時が日本標準時以外の場合に、例外をスローすることを確認
         - 消費税額がドメインで定められた範囲外の場合に、例外をスローすることを確認
         """
+        if not is_jst_datetime(sold_at):
+            raise ValueError("売上日は日本標準時で指定してください。")
+        if not validate_consumption_tax_rate(consumption_tax_rate):
+            raise ValueError("消費税の税率が0.0未満または1.0以上です。")
+        self.id = uuid.uuid4()
+        self.customer = customer
+        self.sold_at = sold_at
+        self.sale_details = []
+        self.subtotal = Decimal("0")
+        self.discount_rate = Decimal("0.0")
+        self.discount_amount = Decimal("0")
+        self.consumption_tax_rate = consumption_tax_rate
+        self.consumption_tax_amount = Decimal("0")
+        self.total = Decimal("0")

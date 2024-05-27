@@ -11,6 +11,10 @@ MIN_CONSUMPTION_TAX_BEGIN = datetime.min.replace(tzinfo=JST)
 # 最も将来の消費税の終点日
 MAX_CONSUMPTION_TAX_END = datetime.max.replace(tzinfo=JST)
 
+# 消費税率の範囲
+MIN_CONSUMPTION_TAX_RATE = Decimal("0.0")
+MAX_CONSUMPTION_TAX_RATE = Decimal("1.0")
+
 
 @dataclass
 class ConsumptionTax:
@@ -53,7 +57,7 @@ class ConsumptionTax:
             raise ValueError("消費税の終点日時が範囲外です。")
         if end <= begin:
             raise ValueError("消費税の起点日時が終点日時以降です。")
-        if rate < Decimal("0.0") or Decimal("1.0") <= rate:
+        if not validate_consumption_tax_rate(rate):
             raise ValueError("消費税の税率が0.0未満または1.0以上です。")
         self.id = id
         self.begin = begin
@@ -75,3 +79,15 @@ class ConsumptionTax:
         if self.end < other.end:
             return False
         return True
+
+
+def validate_consumption_tax_rate(rate: Decimal) -> bool:
+    """消費税の税率を検証する。
+
+    Args:
+        rate (Decimal): 消費税の税率
+
+    Returns:
+        bool: 消費税の税率が妥当な場合はTrue、そうでない場合はFalse
+    """
+    return MIN_CONSUMPTION_TAX_RATE <= rate < MAX_CONSUMPTION_TAX_RATE
