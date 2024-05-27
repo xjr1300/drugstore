@@ -36,6 +36,7 @@ ignore = [
   "D100", # undocumented-public-module
   "D104", # undocumented-public-package
   "D415", # ends-in-punctuation
+  "E731", # lambda-assignment
 ]
 
 extend-ignore = []

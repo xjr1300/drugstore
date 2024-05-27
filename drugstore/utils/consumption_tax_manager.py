@@ -1,5 +1,6 @@
 import bisect
 import uuid
+from decimal import Decimal
 from operator import attrgetter
 from typing import Callable, List
 
@@ -116,6 +117,25 @@ class ConsumptionTaxManager:
         # 消費税リストメンバ変数を設定
         self.consumption_taxes = taxes
 
+    def modify_consumption_tax_rate(self, id: uuid.UUID, renewal: Decimal) -> None:
+        """消費税の税率を変更する。
+
+        引数renewalのidと一致する消費税を消費税リストから検索して、その消費税の税率を変更する。
+        消費税の起点日時や終点日時の変更は、add_consumption_taxメソッドで代用する。
+
+        Args:
+            id (uuid.UUID): 変更する消費税のID
+            renewal (Decimal): 変更後の消費税の税率
+
+        Raises:
+            ValueError: 消費税IDが一致する消費税が消費税リストに存在しません。
+
+        TODO: UnitTests:
+            - idが一致する消費税の税率を変更できることを確認(起点日時、終点日時が変更されていないことを確認)
+            - idが一致する消費税が消費税リストに存在しないときに、ValueErrorがスローされることを確認
+            - 消費税の税率が範囲外のときに、ValueErrorがスローされることを確認
+        """  # noqa: E501
+
 
 def retrieve_contained_consumption_tax_index(
     taxes: List[ConsumptionTax], tax: ConsumptionTax
@@ -203,9 +223,7 @@ def generate_consumption_taxes_for_overlapped_addition(
     # filter関数で追加する消費税の期間に含まれない消費税を消費税リストから抽出した
     # リスト作成することで、実質的に、追加する消費税の期間に含まれる消費税を消費税
     # リストから削除
-    func: Callable[[ConsumptionTax], bool] = lambda t: not addition.contains(  # noqa: E731
-        t
-    )
+    func: Callable[[ConsumptionTax], bool] = lambda t: not addition.contains(t)
     taxes = list(filter(func, taxes))
     # 消費税リストに消費税を追加
     index = bisect.bisect_left(taxes, addition.begin, key=attrgetter("begin"))
