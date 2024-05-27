@@ -2,7 +2,7 @@ import bisect
 import uuid
 from decimal import Decimal
 from operator import attrgetter
-from typing import Callable, List
+from typing import Callable, List, Optional
 
 from ..domain.models.consumption_taxes import (
     MAX_CONSUMPTION_TAX_END,
@@ -128,6 +128,7 @@ class ConsumptionTaxManager:
             renewal (Decimal): 変更後の消費税の税率
 
         Raises:
+            ValueError: 消費税の税率が0.0未満または1.0以上です。
             ValueError: 消費税IDが一致する消費税が消費税リストに存在しません。
 
         TODO: UnitTests:
@@ -135,6 +136,25 @@ class ConsumptionTaxManager:
             - idが一致する消費税が消費税リストに存在しないときに、ValueErrorがスローされることを確認
             - 消費税の税率が範囲外のときに、ValueErrorがスローされることを確認
         """  # noqa: E501
+        # ダミーの消費税を構築して、消費税の税率が範囲内か確認
+        try:
+            _ = ConsumptionTax(
+                uuid.uuid4(),
+                MIN_CONSUMPTION_TAX_BEGIN,
+                MAX_CONSUMPTION_TAX_END,
+                renewal,
+            )
+        except ValueError:
+            raise
+        # 消費税リストから消費税IDが一致する消費税を検索
+        func: Callable[[ConsumptionTax], bool] = lambda tax: tax.id == id
+        target: Optional[ConsumptionTax] = next(
+            filter(func, self.consumption_taxes), None
+        )
+        if target is None:
+            raise ValueError("消費税IDが一致する消費税が消費税リストに存在しません。")
+        # 消費税を変更
+        target.rate = renewal
 
 
 def retrieve_contained_consumption_tax_index(
