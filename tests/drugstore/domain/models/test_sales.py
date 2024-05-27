@@ -33,3 +33,14 @@ class SaleDetailTest(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             _ = SaleDetail(id, item, quantities)
+
+
+class SaleTest(unittest.TestCase):
+    """売上テストクラス
+
+    - 会員以外への売上をインスタンス化できて、小計、割引率、割引額、消費税率、消費税額、合計額が正しいことを確認
+    - 一般会員への売上をインスタンス化できて、顧客ID、小計、割引率、割引額、消費税率、消費税額、合計額が正しいことを確認
+    - 特別会員への売上をインスタンス化できて、顧客ID、小計、割引率、割引額、消費税率、消費税額、合計額が正しいことを確認
+    - 売上明細のない売上をインスタンス化できないことを確認
+    - 同じ商品の売上明細を登録できないことを確認
+    """  # noqa: E501
