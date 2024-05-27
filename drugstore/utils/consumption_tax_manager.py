@@ -160,12 +160,7 @@ class ConsumptionTaxManager:
         Raises:
             ValueError: 消費税IDが一致する消費税が消費税リストに存在しません。
             RuntimeError: 消費税リストに登録された消費税の数を0にできません。
-
-        TODO: 次の単体テストを実装
-            * 消費税を消費税リストから削除できること、また不変条件を満たしていることを確認
-            * 消費税IDが一致する消費税が消費税リストに存在しないときに、例外がスローされることを確認
-            * 消費税リストに登録された消費税が1つの場合に、例外がスローされることを確認
-        """  # noqa: E501
+        """
         # 消費税が1つしか格納されていない場合は例外をスロー
         number_of_taxes = len(self.consumption_taxes)
         if number_of_taxes <= 1:

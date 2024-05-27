@@ -22,6 +22,28 @@ SIMPLE_CONSUMPTION_TAXES = [
     )
 ]
 
+# 3つの消費税を登録した消費税リスト
+THREE_CONSUMPTION_TAXES = [
+    ConsumptionTax(
+        uuid.uuid4(),
+        MIN_CONSUMPTION_TAX_BEGIN,
+        jst_datetime(2024, 4, 1),
+        Decimal("0.05"),
+    ),
+    ConsumptionTax(
+        uuid.uuid4(),
+        jst_datetime(2024, 4, 1),
+        jst_datetime(2024, 6, 1),
+        Decimal("0.10"),
+    ),
+    ConsumptionTax(
+        uuid.uuid4(),
+        jst_datetime(2024, 6, 1),
+        MAX_CONSUMPTION_TAX_END,
+        Decimal("0.15"),
+    ),
+]
+
 # 連続した消費税リスト
 CONTINUOUS_CONSUMPTION_TAXES = [
     ConsumptionTax(
@@ -168,33 +190,14 @@ class ConsumptionTaxManagerTest(unittest.TestCase):
         期間と完全に一致する消費税が消費税リストに存在する場合
         e.begin == a.begin, a.end == e.end
         """
-        existence_taxes = [
-            ConsumptionTax(
-                uuid.uuid4(),
-                MIN_CONSUMPTION_TAX_BEGIN,
-                jst_datetime(2024, 4, 1),
-                Decimal("0.05"),
-            ),
-            ConsumptionTax(
-                uuid.uuid4(),
-                jst_datetime(2024, 4, 1),
-                jst_datetime(2024, 6, 1),
-                Decimal("0.10"),
-            ),
-            ConsumptionTax(
-                uuid.uuid4(),
-                jst_datetime(2024, 6, 1),
-                MAX_CONSUMPTION_TAX_END,
-                Decimal("0.15"),
-            ),
-        ]
+        taxes = copy.deepcopy(THREE_CONSUMPTION_TAXES)
         addition = ConsumptionTax(
             uuid.uuid4(),
             jst_datetime(2024, 4, 1),
             jst_datetime(2024, 6, 1),
             Decimal("0.20"),
         )
-        sut = ConsumptionTaxManager(existence_taxes)
+        sut = ConsumptionTaxManager(taxes)
 
         sut.add_consumption_tax(addition)
 
@@ -575,6 +578,77 @@ class ConsumptionTaxManagerTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             for rate in rates:
                 sut.modify_consumption_tax_rate(uuid.uuid4(), rate)
+
+    """TODO: 次のテストケースを実装
+
+    * ok: 消費税リストに格納されている消費税が3つのときに、2番目の消費税を削除した後、不変条件が守られているか確認
+    * 消費税リストに格納されている消費税が2つのときに、最初の消費税を削除した後、不変条件が守られているか確認
+    * 消費税リストに格納されている消費税が2つのときに、最後の消費税を削除した後、不変条件が守られているか確認
+    * 消費税リストに格納されている消費税が1つの場合に、消費税の削除を試行したとき、例外がスローされることを確認
+    * 消費税リストに格納されている消費税と一致しない消費税IDを指定して、消費税の削除を試行したとき、例外がスローされることを確認
+    """  # noqa: E501
+
+    def test_keep_invariant_conditions_after_removing_first_consumption_tax(
+        self,
+    ) -> None:
+        """消費税リストに格納されている消費税が3つのときに、最初の消費税を削除した後、不変条件が守られているか確認"""
+        taxes = copy.deepcopy(THREE_CONSUMPTION_TAXES)
+        id = taxes[0].id
+        sut = ConsumptionTaxManager(copy.deepcopy(taxes))
+
+        sut.remove_consumption_tax(id)
+
+        self.assertEqual(2, len(sut.consumption_taxes))
+        self.assertTrue(
+            is_same_consumption_tax(
+                sut.consumption_taxes[0],
+                MIN_CONSUMPTION_TAX_BEGIN,
+                taxes[1].end,
+                taxes[1].rate,
+            )
+        )
+
+    def test_keep_invariant_conditions_after_removing_second_consumption_tax(
+        self,
+    ) -> None:
+        """消費税リストに格納されている消費税が3つのときに、2番目の消費税を削除した後、不変条件が守られているか確認"""
+        taxes = copy.deepcopy(THREE_CONSUMPTION_TAXES)
+        id = taxes[1].id
+        sut = ConsumptionTaxManager(copy.deepcopy(taxes))
+
+        sut.remove_consumption_tax(id)
+
+        self.assertEqual(2, len(sut.consumption_taxes))
+        self.assertTrue(
+            is_same_consumption_tax(
+                sut.consumption_taxes[0], taxes[0].begin, taxes[0].end, taxes[0].rate
+            )
+        )
+        self.assertTrue(
+            is_same_consumption_tax(
+                sut.consumption_taxes[1], taxes[0].end, taxes[2].end, taxes[2].rate
+            )
+        )
+
+    def test_keep_invariant_conditions_after_removing_last_consumption_tax(
+        self,
+    ) -> None:
+        """消費税リストに格納されている消費税が3つのときに、最後の消費税を削除した後、不変条件が守られているか確認"""
+        taxes = copy.deepcopy(THREE_CONSUMPTION_TAXES)
+        id = taxes[2].id
+        sut = ConsumptionTaxManager(copy.deepcopy(taxes))
+
+        sut.remove_consumption_tax(id)
+
+        self.assertEqual(2, len(sut.consumption_taxes))
+        self.assertTrue(
+            is_same_consumption_tax(
+                sut.consumption_taxes[1],
+                taxes[1].begin,
+                MAX_CONSUMPTION_TAX_END,
+                taxes[1].rate,
+            )
+        )
 
 
 def is_same_consumption_tax(
