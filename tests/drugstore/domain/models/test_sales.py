@@ -1,9 +1,12 @@
 import unittest
 import uuid
+from datetime import datetime, timezone
 from decimal import Decimal
 
-from drugstore.domain.models.sales import SaleDetail
+from drugstore.common import jst_datetime
+from drugstore.domain.models.sales import Sale, SaleDetail
 
+from .test_customers import create_general_customer
 from .test_items import create_seirogan
 
 
@@ -35,12 +38,43 @@ class SaleDetailTest(unittest.TestCase):
             _ = SaleDetail(id, item, quantities)
 
 
-class SaleTest(unittest.TestCase):
-    """売上テストクラス
+class SaleInitializerTest(unittest.TestCase):
+    """売上イニシャライザテストクラス"""
 
-    - 会員以外への売上をインスタンス化できて、小計、割引率、割引額、消費税率、消費税額、合計額が正しいことを確認
-    - 一般会員への売上をインスタンス化できて、顧客ID、小計、割引率、割引額、消費税率、消費税額、合計額が正しいことを確認
-    - 特別会員への売上をインスタンス化できて、顧客ID、小計、割引率、割引額、消費税率、消費税額、合計額が正しいことを確認
-    - 売上明細のない売上をインスタンス化できないことを確認
-    - 同じ商品の売上明細を登録できないことを確認
-    """  # noqa: E501
+    def test_instantiate_by_valid_attrs(self) -> None:
+        """妥当な引数でインスタンスを構築できることを確認"""
+        customer = create_general_customer()
+        sold_at = jst_datetime(2024, 1, 1)
+        consumption_tax_rate = Decimal("0.1")
+
+        sut = Sale(customer, sold_at, consumption_tax_rate)
+
+        self.assertEqual(customer, sut.customer)
+        self.assertEqual(sold_at, sut.sold_at)
+        self.assertEqual([], sut.sale_details)
+        self.assertEqual(Decimal("0"), sut.subtotal)
+        self.assertEqual(Decimal("0.0"), sut.discount_rate)
+        self.assertEqual(Decimal("0"), sut.discount_amount)
+        self.assertEqual(consumption_tax_rate, sut.consumption_tax_rate)
+        self.assertEqual(Decimal("0"), sut.consumption_tax_amount)
+        self.assertEqual(Decimal("0"), sut.total)
+
+    def test_can_not_instantiate_by_non_jst_datetimes(self) -> None:
+        """売上日時が日本標準時以外のときに例外をスローすることを確認"""
+        customer = create_general_customer()
+        dts = [datetime(2024, 1, 1), datetime(2024, 1, 1, tzinfo=timezone.utc)]
+        consumption_tax_rate = Decimal("0.1")
+
+        with self.assertRaises(ValueError):
+            for dt in dts:
+                _ = Sale(customer, dt, consumption_tax_rate)
+
+    def test_can_not_instantiate_by_invalid_consumption_tax_rates(self) -> None:
+        """消費税額がドメインで定められた範囲外の場合に、例外をスローすることを確認"""
+        customer = create_general_customer()
+        sold_at = jst_datetime(2024, 1, 1)
+        rates = [Decimal("-0.01"), Decimal("1.0")]
+
+        with self.assertRaises(ValueError):
+            for rate in rates:
+                _ = Sale(customer, sold_at, rate)

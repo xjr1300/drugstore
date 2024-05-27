@@ -5,6 +5,18 @@ from drugstore.domain.models.customers import Customer
 from drugstore.domain.models.membership_types import MembershipType
 
 
+def create_general_customer() -> Customer:
+    """テスト用の一般会員顧客を作成する。
+
+    Returns:
+        Customer: 一般会員の顧客
+    """
+    id = uuid.uuid4()
+    name = "徳川　家康"
+    membership_type = MembershipType.general_membership_type()
+    return Customer(id, name, membership_type)
+
+
 class CustomerTest(unittest.TestCase):
     """顧客テストクラス"""
 
