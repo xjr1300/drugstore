@@ -4,7 +4,7 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Self
 
-from drugstore.common import JST
+from drugstore.common import JST, is_jst_datetime
 
 # 最も過去の消費税の起点日
 MIN_CONSUMPTION_TAX_BEGIN = datetime.min.replace(tzinfo=JST)
@@ -43,7 +43,7 @@ class ConsumptionTax:
             ValueError: 消費税の起点日時が終点日時以降です。
             ValueError: 消費税の税率が0.0未満または1.0以上です。
         """
-        if begin.tzinfo != JST or end.tzinfo != JST:
+        if not is_jst_datetime(begin) or not is_jst_datetime(end):
             raise ValueError(
                 "消費税の起点日時と終点日時は日本標準時でなくてはなりません。"
             )

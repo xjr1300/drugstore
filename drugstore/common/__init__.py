@@ -22,3 +22,16 @@ def jst_datetime(
         datetime: 日本標準時の日時
     """
     return datetime(year, month, day, hour, minute, second, tzinfo=JST)
+
+
+def is_jst_datetime(dt: datetime) -> bool:
+    """日時が日本標準時か確認する。
+
+    Args:
+        dt (datetime): 日時
+
+    Returns:
+        bool: 日本標準時の場合はTrue
+            タイムゾーンが指定されていない、または日本標準時でない場合はFalse
+    """
+    return dt.tzinfo == JST

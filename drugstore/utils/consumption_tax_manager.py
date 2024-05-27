@@ -5,6 +5,7 @@ from decimal import Decimal
 from operator import attrgetter
 from typing import Callable, List, Optional
 
+from drugstore.common import is_jst_datetime
 from drugstore.domain.models.consumption_taxes import (
     MAX_CONSUMPTION_TAX_END,
     MIN_CONSUMPTION_TAX_BEGIN,
@@ -97,6 +98,16 @@ class ConsumptionTaxManager:
         - 日本標準時でない日時を指定したとき、例外がスローされることを確認
         - 終点日時の最大値を指定したとき、例外がスローされることを確認
         """  # noqa: E501
+        if not is_jst_datetime(dt):
+            raise ValueError("日本標準時の日時を指定してください。")
+        if dt == MAX_CONSUMPTION_TAX_END:
+            raise ValueError("消費税の税率が管理されていない日時です。")
+        for tax in self.consumption_taxes:
+            if tax.begin <= dt and dt < tax.end:
+                return tax.rate
+        raise RuntimeError(
+            "消費税の税率を返す関数内で想定していないエラーが発生しました。"
+        )
 
     def add_consumption_tax(self, addition: ConsumptionTax) -> None:
         """消費税リストに消費税を追加する。
