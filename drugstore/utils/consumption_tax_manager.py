@@ -156,6 +156,22 @@ class ConsumptionTaxManager:
         # 消費税を変更
         target.rate = renewal
 
+    def remove_consumption_tax(self, id: uuid.UUID) -> None:
+        """消費税IDで指定された消費税を消費税リストから削除する。
+
+        Args:
+            id (uuid.UUID): 削除する消費税のID
+
+        Raises:
+            ValueError: 消費税IDが一致する消費税が消費税リストに存在しません。
+            RuntimeError: 消費税リストに登録された消費税の数を0にできません。
+
+        TODO: 次の単体テストを実装
+            * 消費税を消費税リストから削除できること、また不変条件を満たしていることを確認
+            * 消費税IDが一致する消費税が消費税リストに存在しないときに、例外がスローされることを確認
+            * 消費税リストに登録された消費税が1つの場合に、例外がスローされることを確認
+        """  # noqa: E501
+
 
 def retrieve_contained_consumption_tax_index(
     taxes: List[ConsumptionTax], tax: ConsumptionTax
