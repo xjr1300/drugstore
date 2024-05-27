@@ -2,7 +2,7 @@ import copy
 import random
 import unittest
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 
 from drugstore.common import jst_datetime
@@ -133,6 +133,68 @@ class ConsumptionTaxManagerTest(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             _ = ConsumptionTaxManager(taxes)
+
+    def test_ensure_return_consumption_tax_rate_if_assigning_middle_of_the_period(
+        self,
+    ) -> None:
+        """消費税の起点日時と終点日時の間の日時を指定したとき、その消費税の税率を返すことを確認"""
+        taxes = copy.deepcopy(THREE_CONSUMPTION_TAXES)
+        delta = taxes[1].end - taxes[1].begin
+        dt = taxes[1].begin + delta / 2
+        sut = ConsumptionTaxManager(taxes)
+
+        result = sut.consumption_tax_rate(dt)
+
+        self.assertEqual(taxes[1].rate, result)
+
+    def test_ensure_return_consumption_tax_rate_if_assigning_beginning_of_the_period(
+        self,
+    ) -> None:
+        """消費税の起点日時を指定したとき、その消費税の税率を返すことを確認"""
+        taxes = copy.deepcopy(THREE_CONSUMPTION_TAXES)
+        sut = ConsumptionTaxManager(taxes)
+
+        result = sut.consumption_tax_rate(taxes[1].begin)
+
+        self.assertEqual(taxes[1].rate, result)
+
+    def test_ensure_return_consumption_tax_rate_if_assigning_end_of_the_period(
+        self,
+    ) -> None:
+        """消費税の終点日時を指定したとき、その消費税の次の消費税の税率を返すことを確認"""
+        taxes = copy.deepcopy(THREE_CONSUMPTION_TAXES)
+        sut = ConsumptionTaxManager(taxes)
+
+        result = sut.consumption_tax_rate(taxes[1].end)
+
+        self.assertEqual(taxes[2].rate, result)
+
+    def test_ensure_return_consumption_tax_rate_if_assigning_min_of_begin(self) -> None:
+        """消費税の起点日時の最小値を指定したとき、その消費税の次の消費税の税率を返すことを確認"""
+        taxes = copy.deepcopy(THREE_CONSUMPTION_TAXES)
+        sut = ConsumptionTaxManager(taxes)
+
+        result = sut.consumption_tax_rate(MIN_CONSUMPTION_TAX_BEGIN)
+
+        self.assertEqual(taxes[0].rate, result)
+
+    def test_ensure_raise_exception_if_assigning_max_of_end(self) -> None:
+        """消費税の終点日時の最大値を指定したとき、例外をスローすることを確認"""
+        taxes = copy.deepcopy(THREE_CONSUMPTION_TAXES)
+        sut = ConsumptionTaxManager(taxes)
+
+        with self.assertRaises(ValueError):
+            _ = sut.consumption_tax_rate(MAX_CONSUMPTION_TAX_END)
+
+    def test_ensure_raise_exception_if_assigning_non_jst(self) -> None:
+        """日本標準時以外の日時を指定したとき、例外をスローすることを確認"""
+        taxes = copy.deepcopy(THREE_CONSUMPTION_TAXES)
+        dts = [datetime(2024, 1, 1), datetime(2024, 1, 1, tzinfo=timezone.utc)]
+        sut = ConsumptionTaxManager(taxes)
+
+        with self.assertRaises(ValueError):
+            for dt in dts:
+                _ = sut.consumption_tax_rate(dt)
 
     def test_additional_included_consumption_tax(self) -> None:
         """既存の消費税の期間に完全に含まれる消費税を追加した後、不変条件を満たすことを確認
