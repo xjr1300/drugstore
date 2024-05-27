@@ -130,12 +130,7 @@ class ConsumptionTaxManager:
         Raises:
             ValueError: 消費税の税率が0.0未満または1.0以上です。
             ValueError: 消費税IDが一致する消費税が消費税リストに存在しません。
-
-        TODO: UnitTests:
-            - idが一致する消費税の税率を変更できることを確認(起点日時、終点日時が変更されていないことを確認)
-            - idが一致する消費税が消費税リストに存在しないときに、ValueErrorがスローされることを確認
-            - 消費税の税率が範囲外のときに、ValueErrorがスローされることを確認
-        """  # noqa: E501
+        """
         # ダミーの消費税を構築して、消費税の税率が範囲内か確認
         try:
             _ = ConsumptionTax(
@@ -171,6 +166,35 @@ class ConsumptionTaxManager:
             * 消費税IDが一致する消費税が消費税リストに存在しないときに、例外がスローされることを確認
             * 消費税リストに登録された消費税が1つの場合に、例外がスローされることを確認
         """  # noqa: E501
+        # 消費税が1つしか格納されていない場合は例外をスロー
+        number_of_taxes = len(self.consumption_taxes)
+        if number_of_taxes <= 1:
+            raise RuntimeError("消費税リストに登録された消費税の数を0にできません。")
+        # 消費税IDが一致する消費税を示す消費税リストのインデックスを取得
+        index = 0
+        while index < number_of_taxes:
+            if self.consumption_taxes[index].id == id:
+                break
+            index += 1
+        if number_of_taxes <= index:
+            raise ValueError("消費税IDが一致する消費税が消費税リストに存在しません。")
+        # 消費税リストの消費税の期間が連続するように、削除するインデックスの1つ後の
+        # 消費税の起点日時を、削除するインデックスの1つ前の終点日時に変更
+        # * index==0の場合は先頭の消費税を削除するため対象外
+        # * 1==number_of_taxesの場合は末尾の消費税を削除するため
+        #   対象外
+        if 0 < index and 1 < number_of_taxes - index:
+            self.consumption_taxes[index + 1].begin = self.consumption_taxes[
+                index - 1
+            ].end
+        # 先頭の消費税を削除する場合は、次の消費税の起点日時を起点日時の最小値に変更
+        if index == 0:
+            self.consumption_taxes[1].begin = MIN_CONSUMPTION_TAX_BEGIN
+        # 末尾の消費税を削除する場合は、前の消費税の終点日時を終点日時の最大値に変更
+        if index == number_of_taxes - 1:
+            self.consumption_taxes[index - 1].end = MAX_CONSUMPTION_TAX_END
+        # 消費税を削除
+        del self.consumption_taxes[index]
 
 
 def retrieve_contained_consumption_tax_index(
