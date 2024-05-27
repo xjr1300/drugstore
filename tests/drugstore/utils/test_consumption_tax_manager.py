@@ -15,7 +15,14 @@ from drugstore.utils.consumption_tax_manager import (
     ConsumptionTaxManager,
 )
 
-# 連続した消費税のリスト
+# 消費税が1つ登録された消費税リスト
+SIMPLE_CONSUMPTION_TAXES = [
+    ConsumptionTax(
+        uuid.uuid4(), MIN_CONSUMPTION_TAX_BEGIN, MAX_CONSUMPTION_TAX_END, Decimal("0.1")
+    )
+]
+
+# 連続した消費税リスト
 CONTINUOUS_CONSUMPTION_TAXES = [
     ConsumptionTax(
         uuid.uuid4(),
@@ -55,7 +62,7 @@ class ConsumptionTaxManagerTest(unittest.TestCase):
     """  # noqa: E501
 
     def test_instantiate_by_list_contains_continuous_consumption_taxes(self) -> None:
-        """期間が連続した消費税のリストが渡されたとき、インスタンスを構築できることを確認"""
+        """期間が連続した消費税リストが渡されたとき、インスタンスを構築できることを確認"""
         # 連続した消費税リストをランダムに並び替え
         taxes = copy.deepcopy(CONTINUOUS_CONSUMPTION_TAXES)
         random.shuffle(taxes)
@@ -67,7 +74,7 @@ class ConsumptionTaxManagerTest(unittest.TestCase):
         self.assertEqual(MAX_CONSUMPTION_TAX_END, sut.consumption_taxes[-1].end)
 
     def test_instantiate_by_list_contains_one_consumption_tax(self) -> None:
-        """1つの消費税を格納した消費税のリストが渡されたとき、インスタンス化できることを確認"""
+        """1つの消費税を格納した消費税リストが渡されたとき、インスタンス化できることを確認"""
         taxes = [
             ConsumptionTax(
                 uuid.uuid4(),
@@ -86,7 +93,7 @@ class ConsumptionTaxManagerTest(unittest.TestCase):
     def test_can_not_instantiate_by_consumption_tax_list_that_is_not_continuous(
         self,
     ) -> None:
-        """期間が途切れている消費税のリストが渡されたとき、インスタンス化できないことを確認"""
+        """期間が途切れている消費税リストが渡されたとき、インスタンス化できないことを確認"""
         taxes = copy.deepcopy(CONTINUOUS_CONSUMPTION_TAXES)
         # 2番目の消費税を削除して、期間を途切れさせる
         del taxes[1]
@@ -97,7 +104,7 @@ class ConsumptionTaxManagerTest(unittest.TestCase):
     def test_can_not_instantiate_by_consumption_tax_list_that_period_is_overlapped(
         self,
     ) -> None:
-        """期間が重複している消費税のリストが渡されたとき、インスタンス化できないことを確認"""
+        """期間が重複している消費税リストが渡されたとき、インスタンス化できないことを確認"""
         taxes = copy.deepcopy(CONTINUOUS_CONSUMPTION_TAXES)
         # 最初と次の消費税の期間を重複させる
         taxes[1].begin = taxes[1].begin - timedelta(seconds=1)
@@ -528,6 +535,46 @@ class ConsumptionTaxManagerTest(unittest.TestCase):
                 Decimal("0.15"),
             )
         )
+
+    def test_modify_consumption_tax_rate(self) -> None:
+        """消費税リストに存在するidが一致する消費税の税率を変更できることを確認"""
+        taxes = copy.deepcopy(SIMPLE_CONSUMPTION_TAXES)
+        id = taxes[0].id
+        begin = taxes[0].begin
+        end = taxes[0].end
+        rate = taxes[0].rate + Decimal("0.01")
+
+        sut = ConsumptionTaxManager(taxes)
+
+        sut.modify_consumption_tax_rate(id, rate)
+
+        self.assertEqual(1, len(sut.consumption_taxes))
+        self.assertEqual(rate, sut.consumption_taxes[0].rate)
+        self.assertEqual(id, sut.consumption_taxes[0].id)
+        self.assertEqual(begin, sut.consumption_taxes[0].begin)
+        self.assertEqual(end, sut.consumption_taxes[0].end)
+
+    def test_raise_exception_if_modifying_consumption_tax_rate_by_non_existence_id(
+        self,
+    ) -> None:
+        """idが一致する消費税が消費税リストに存在しないときに、ValueErrorがスローされることを確認"""
+        taxes = copy.deepcopy(SIMPLE_CONSUMPTION_TAXES)
+        sut = ConsumptionTaxManager(taxes)
+
+        with self.assertRaises(ValueError):
+            sut.modify_consumption_tax_rate(uuid.uuid4(), Decimal("0.1"))
+
+    def test_raise_exception_if_modifying_consumption_tax_rage_by_outrange_rate(
+        self,
+    ) -> None:
+        """消費税の税率が範囲外のときに、ValueErrorがスローされることを確認"""
+        taxes = copy.deepcopy(SIMPLE_CONSUMPTION_TAXES)
+        sut = ConsumptionTaxManager(taxes)
+        rates = [Decimal("-0.01"), Decimal("1.01")]
+
+        with self.assertRaises(ValueError):
+            for rate in rates:
+                sut.modify_consumption_tax_rate(uuid.uuid4(), rate)
 
 
 def is_same_consumption_tax(
