@@ -9,11 +9,23 @@ def create_general_customer() -> Customer:
     """テスト用の一般会員顧客を作成する。
 
     Returns:
-        Customer: 一般会員の顧客
+        Customer: 一般会員顧客
     """
     id = uuid.uuid4()
     name = "徳川　家康"
     membership_type = MembershipType.general_membership_type()
+    return Customer(id, name, membership_type)
+
+
+def create_special_customer() -> Customer:
+    """テスト用の特別会員顧客を作成する。
+
+    Returns:
+        Customer: 特別会員顧客
+    """
+    id = uuid.uuid4()
+    name = "徳川　慶喜"
+    membership_type = MembershipType.special_membership_type()
     return Customer(id, name, membership_type)
 
 
