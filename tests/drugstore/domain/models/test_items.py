@@ -102,10 +102,37 @@ class ItemTest(unittest.TestCase):
             _ = Item(id, name, unit_price)
 
 
-def create_seirogan() -> Item:
+def create_seirogan(unit_price: Decimal) -> Item:
     """正露丸を作成する。
+
+    Args:
+        unit_price (Decimal): 単価
 
     Returns:
         Item: 正露丸を表現する商品
     """
-    return Item(uuid.uuid4(), "正露丸", Decimal("300.0"))
+    return Item(uuid.uuid4(), "正露丸", unit_price)
+
+
+def create_bufferin(unit_price: Decimal) -> Item:
+    """バファリンを作成する。
+
+    Args:
+        unit_price (Decimal): 単価
+
+    Returns:
+        Item: バファリンを表現する商品
+    """
+    return Item(uuid.uuid4(), "バファリン", unit_price)
+
+
+def create_vantelin(unit_price: Decimal) -> Item:
+    """バンテリンを作成する。
+
+    Args:
+        unit_price (Decimal): 単価
+
+    Returns:
+        Item: バンテリンを表現する商品
+    """
+    return Item(uuid.uuid4(), "バファリン", unit_price)
