@@ -80,7 +80,7 @@ class SaleInitializerTest(unittest.TestCase):
                 _ = Sale(customer, sold_at, rate)
 
 
-def vantelin_sale_detail(
+def create_vantelin_sale_detail(
     id: uuid.UUID, unit_price: Decimal, quantities: int
 ) -> SaleDetail:
     """バンテリンの売上明細を作成する。
@@ -96,7 +96,7 @@ def vantelin_sale_detail(
     return SaleDetail(id, create_bufferin(unit_price), quantities)
 
 
-def bufferin_sale_detail(
+def create_bufferin_sale_detail(
     id: uuid.UUID, unit_price: Decimal, quantities: int
 ) -> SaleDetail:
     """バファリンの売上明細を作成する。
@@ -128,9 +128,9 @@ class GeneralCustomerSaleTest(unittest.TestCase):
         sut = Sale(self.customer, sold_at, consumption_tax_rate)
 
         # 小計999円
-        sut.add_sale_detail(vantelin_sale_detail(sut.id, Decimal("999"), 1))
+        sut.add_sale_detail(create_vantelin_sale_detail(sut.id, Decimal("999"), 1))
         # 小計2,000円
-        sut.add_sale_detail(bufferin_sale_detail(sut.id, Decimal("500"), 4))
+        sut.add_sale_detail(create_bufferin_sale_detail(sut.id, Decimal("500"), 4))
 
         self.assertEqual(Decimal("2999"), sut.subtotal)
         self.assertEqual(Decimal("0.05"), sut.discount_rate)
@@ -147,9 +147,9 @@ class GeneralCustomerSaleTest(unittest.TestCase):
         sut = Sale(self.customer, sold_at, consumption_tax_rate)
 
         # 小計1,000円
-        sut.add_sale_detail(vantelin_sale_detail(sut.id, Decimal("1000"), 1))
+        sut.add_sale_detail(create_vantelin_sale_detail(sut.id, Decimal("1000"), 1))
         # 小計2,000円
-        sut.add_sale_detail(bufferin_sale_detail(sut.id, Decimal("500"), 4))
+        sut.add_sale_detail(create_bufferin_sale_detail(sut.id, Decimal("500"), 4))
 
         self.assertEqual(Decimal("3000"), sut.subtotal)
         self.assertEqual(Decimal("0.1"), sut.discount_rate)
@@ -166,9 +166,9 @@ class GeneralCustomerSaleTest(unittest.TestCase):
         sut = Sale(self.customer, sold_at, consumption_tax_rate)
 
         # 小計1,001円
-        sut.add_sale_detail(vantelin_sale_detail(sut.id, Decimal("1001"), 1))
+        sut.add_sale_detail(create_vantelin_sale_detail(sut.id, Decimal("1001"), 1))
         # 小計2,000円
-        sut.add_sale_detail(bufferin_sale_detail(sut.id, Decimal("500"), 4))
+        sut.add_sale_detail(create_bufferin_sale_detail(sut.id, Decimal("500"), 4))
 
         self.assertEqual(Decimal("3001"), sut.subtotal)
         self.assertEqual(Decimal("0.1"), sut.discount_rate)
@@ -195,9 +195,9 @@ class SpecialCustomerSaleTest(unittest.TestCase):
         sut = Sale(self.customer, sold_at, consumption_tax_rate)
 
         # 小計999円
-        sut.add_sale_detail(vantelin_sale_detail(sut.id, Decimal("999"), 1))
+        sut.add_sale_detail(create_vantelin_sale_detail(sut.id, Decimal("999"), 1))
         # 小計2,000円
-        sut.add_sale_detail(bufferin_sale_detail(sut.id, Decimal("500"), 4))
+        sut.add_sale_detail(create_bufferin_sale_detail(sut.id, Decimal("500"), 4))
 
         self.assertEqual(Decimal("2999"), sut.subtotal)
         self.assertEqual(Decimal("0.10"), sut.discount_rate)
@@ -214,9 +214,9 @@ class SpecialCustomerSaleTest(unittest.TestCase):
         sut = Sale(self.customer, sold_at, consumption_tax_rate)
 
         # 小計1,000円
-        sut.add_sale_detail(vantelin_sale_detail(sut.id, Decimal("1000"), 1))
+        sut.add_sale_detail(create_vantelin_sale_detail(sut.id, Decimal("1000"), 1))
         # 小計2,000円
-        sut.add_sale_detail(bufferin_sale_detail(sut.id, Decimal("500"), 4))
+        sut.add_sale_detail(create_bufferin_sale_detail(sut.id, Decimal("500"), 4))
 
         self.assertEqual(Decimal("3000"), sut.subtotal)
         self.assertEqual(Decimal("0.2"), sut.discount_rate)
@@ -233,9 +233,9 @@ class SpecialCustomerSaleTest(unittest.TestCase):
         sut = Sale(self.customer, sold_at, consumption_tax_rate)
 
         # 小計1,001円
-        sut.add_sale_detail(vantelin_sale_detail(sut.id, Decimal("1001"), 1))
+        sut.add_sale_detail(create_vantelin_sale_detail(sut.id, Decimal("1001"), 1))
         # 小計2,000円
-        sut.add_sale_detail(bufferin_sale_detail(sut.id, Decimal("500"), 4))
+        sut.add_sale_detail(create_bufferin_sale_detail(sut.id, Decimal("500"), 4))
 
         self.assertEqual(Decimal("3001"), sut.subtotal)
         self.assertEqual(Decimal("0.2"), sut.discount_rate)
@@ -256,9 +256,9 @@ class NoneCustomerSaleTest(unittest.TestCase):
         sut = Sale(None, sold_at, consumption_tax_rate)
 
         # 小計999円
-        sut.add_sale_detail(vantelin_sale_detail(sut.id, Decimal("999"), 1))
+        sut.add_sale_detail(create_vantelin_sale_detail(sut.id, Decimal("999"), 1))
         # 小計2,000円
-        sut.add_sale_detail(bufferin_sale_detail(sut.id, Decimal("500"), 4))
+        sut.add_sale_detail(create_bufferin_sale_detail(sut.id, Decimal("500"), 4))
 
         self.assertEqual(Decimal("2999"), sut.subtotal)
         self.assertEqual(Decimal("0.00"), sut.discount_rate)
@@ -275,9 +275,9 @@ class NoneCustomerSaleTest(unittest.TestCase):
         sut = Sale(None, sold_at, consumption_tax_rate)
 
         # 小計1,000円
-        sut.add_sale_detail(vantelin_sale_detail(sut.id, Decimal("1000"), 1))
+        sut.add_sale_detail(create_vantelin_sale_detail(sut.id, Decimal("1000"), 1))
         # 小計2,000円
-        sut.add_sale_detail(bufferin_sale_detail(sut.id, Decimal("500"), 4))
+        sut.add_sale_detail(create_bufferin_sale_detail(sut.id, Decimal("500"), 4))
 
         self.assertEqual(Decimal("3000"), sut.subtotal)
         self.assertEqual(Decimal("0.00"), sut.discount_rate)
@@ -294,9 +294,9 @@ class NoneCustomerSaleTest(unittest.TestCase):
         sut = Sale(None, sold_at, consumption_tax_rate)
 
         # 小計1,001円
-        sut.add_sale_detail(vantelin_sale_detail(sut.id, Decimal("1001"), 1))
+        sut.add_sale_detail(create_vantelin_sale_detail(sut.id, Decimal("1001"), 1))
         # 小計2,000円
-        sut.add_sale_detail(bufferin_sale_detail(sut.id, Decimal("500"), 4))
+        sut.add_sale_detail(create_bufferin_sale_detail(sut.id, Decimal("500"), 4))
 
         self.assertEqual(Decimal("3001"), sut.subtotal)
         self.assertEqual(Decimal("0.00"), sut.discount_rate)
@@ -319,8 +319,8 @@ class SaleTest(unittest.TestCase):
         consumption_tax_rate = Decimal("0.1")
         sut = Sale(customer, sold_at, consumption_tax_rate)
 
-        sut.add_sale_detail(vantelin_sale_detail(sut.id, Decimal("1000"), 1))
-        sut.add_sale_detail(vantelin_sale_detail(sut.id, Decimal("1000"), 1))
+        sut.add_sale_detail(create_vantelin_sale_detail(sut.id, Decimal("1000"), 1))
+        sut.add_sale_detail(create_vantelin_sale_detail(sut.id, Decimal("1000"), 1))
 
         self.assertEqual(Decimal("2000"), sut.subtotal)
         self.assertEqual(Decimal("0.05"), sut.discount_rate)
@@ -329,3 +329,44 @@ class SaleTest(unittest.TestCase):
         self.assertEqual(Decimal("0.1"), sut.consumption_tax_rate)
         self.assertEqual(Decimal("190"), sut.consumption_tax_amount)
         self.assertEqual(Decimal("2090"), sut.total)
+
+    def test_ensure_update_overall_after_sale_detail_is_removed(
+        self,
+    ) -> None:
+        """売上明細を削除したとき、小計、割引率、割引額、課税対象額、消費税額、合計が正しいか確認
+
+        小計が3,000円以上ある売上から、売上明細が削除されて小計が3,000円未満になったとき、
+        小計、割引率、割引額、課税対象額、消費税額、合計が正しいか確認する。
+        """
+        customer = create_general_customer()
+        sold_at = jst_datetime(2024, 1, 1)
+        consumption_tax_rate = Decimal("0.1")
+        sut = Sale(customer, sold_at, consumption_tax_rate)
+        bufferin_sd = create_bufferin_sale_detail(sut.id, Decimal("600"), 1)
+        sut.add_sale_detail(bufferin_sd)
+        vantelin_sd = create_vantelin_sale_detail(sut.id, Decimal("2400"), 1)
+        sut.add_sale_detail(vantelin_sd)
+
+        sut.remove_sale_detail(bufferin_sd.item.id)
+
+        self.assertEqual(Decimal("2400"), sut.subtotal)
+        self.assertEqual(Decimal("0.05"), sut.discount_rate)
+        self.assertEqual(Decimal("120"), sut.discount_amount)
+        self.assertEqual(Decimal("2280"), sut.taxable_amount)
+        self.assertEqual(Decimal("0.1"), sut.consumption_tax_rate)
+        self.assertEqual(Decimal("228"), sut.consumption_tax_amount)
+        self.assertEqual(Decimal("2508"), sut.total)
+
+    def test_raise_exception_if_assigning_item_id_that_does_not_exist_sale_details(
+        self,
+    ) -> None:
+        """引数で指定された商品の売上明細が売上に存在しない場合に例外をスローするか確認"""
+        customer = create_general_customer()
+        sold_at = jst_datetime(2024, 1, 1)
+        consumption_tax_rate = Decimal("0.1")
+        sut = Sale(customer, sold_at, consumption_tax_rate)
+        bufferin_sd = create_bufferin_sale_detail(sut.id, Decimal("600"), 1)
+        sut.add_sale_detail(bufferin_sd)
+
+        with self.assertRaises(ValueError):
+            sut.remove_sale_detail(uuid.uuid4())
