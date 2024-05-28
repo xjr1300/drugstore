@@ -142,6 +142,19 @@ class Sale:
         - 小計が3,000円以上ある売上から、売上明細が削除されて小計が3,000円未満になったとき、小計、割引率、割引額、課税対象額、消費税額、合計が正しいか確認
         - 引数で指定された商品の売上明細が売上に存在しない場合に例外をスローするか確認
         """  # noqa: E501
+        # 引数で指定された商品IDで示される商品を売り上げた、売上明細が売上に
+        # 登録されているか確認
+        existences = [
+            (idx, sd) for idx, sd in enumerate(self.sale_details) if sd.item.id == id
+        ]
+        if not existences:
+            raise ValueError(
+                "指定された商品IDで示される商品を売り上げた商品明細が存在しません。"
+            )
+        # 売上明細を削除
+        del self.sale_details[existences[0][0]]
+        # 小計、割引率、割引額、課税対象額、消費税額、合計を計算してメンバ変数に設定
+        self._calculate_overall()
 
     def _calculate_overall(self) -> None:
         """小計、割引率、割引額、課税対象額、消費税額、合計を計算してメンバ変数に設定する。"""
