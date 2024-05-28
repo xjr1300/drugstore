@@ -34,3 +34,18 @@ class Item:
         self.id = id
         self.name = cleaned_name
         self.unit_price = unit_price
+
+    def __eq__(self, value: object) -> bool:
+        """同じ商品か確認する。
+
+        商品IDで商品の同一性を確認する。
+
+        Args:
+            value (object): 商品
+
+        Returns:
+            bool: 同じ商品の場合はTrue、それ以外の場合はFalse
+        """
+        if not isinstance(value, Item):
+            return False
+        return self.id == value.id

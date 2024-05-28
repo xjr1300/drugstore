@@ -21,7 +21,7 @@ class SaleDetailTest(unittest.TestCase):
 
         sut = SaleDetail(id, item, quantities)
 
-        self.assertEqual(id, sut.id)
+        self.assertEqual(id, sut.sale_id)
         self.assertEqual(item.id, sut.item.id)
         self.assertEqual(item.name, sut.item.name)
         self.assertEqual(item.unit_price, sut.item.unit_price)

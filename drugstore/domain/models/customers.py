@@ -1,7 +1,7 @@
 import uuid
 from dataclasses import dataclass
 
-from .membership_types import MembershipType
+from .membership_types import MembershipType, MembershipTypeCode
 
 
 @dataclass
@@ -34,3 +34,19 @@ class Customer:
         self.id = id
         self.name = cleaned_name
         self.membership_type = membership_type
+
+    def is_general_member(self) -> bool:
+        """一般会員か確認する。
+
+        Returns:
+            bool: 一般会員の場合はTrue、それ以外の場合はFalse
+        """
+        return self.membership_type.code == MembershipTypeCode.General.value
+
+    def is_special_member(self) -> bool:
+        """特別会員か確認する。
+
+        Returns:
+            bool: 特別会員の場合はTrue、それ以外の場合はFalse
+        """
+        return self.membership_type.code == MembershipTypeCode.Special.value
