@@ -1,8 +1,8 @@
 import uuid
 from dataclasses import dataclass
 from datetime import datetime
-from decimal import Decimal
-from typing import List, Optional
+from decimal import ROUND_DOWN, Decimal
+from typing import Callable, List, Optional
 
 from drugstore.common import is_jst_datetime
 from drugstore.domain.models.consumption_taxes import validate_consumption_tax_rate
@@ -116,3 +116,75 @@ class Sale:
         - 会員以外の顧客の売上の小計が3,000円以上の場合に、割引率が0%になることを確認
         - 同じ商品の売上明細を売上に追加したときに、同じ商品の売上明細が追加されず、登録されている売上明細の数量と小計に足されていることを確認
         """  # noqa: E501
+        # 追加する売上明細の商品が、すでに登録されている売上明細の商品であるか確認
+        func: Callable[[SaleDetail], bool] = lambda sd: sd.item == sale_detail.item
+        existence = next(filter(func, self.sale_details), None)
+        if existence is None:
+            # 登録されていない売上明細の商品の場合は売上明細を登録
+            self.sale_details.append(sale_detail)
+        else:
+            # すでに登録されている売上明細の商品の場合は数量と小計を足す
+            existence.quantities += sale_detail.quantities
+            existence.amount += sale_detail.amount
+        # 小計、割引率、割引額、課税対象額、消費税額、合計を計算してメンバ変数に設定
+        self._calculate_overall()
+
+    def _calculate_overall(self) -> None:
+        """小計、割引率、割引額、課税対象額、消費税額、合計を計算してメンバ変数に設定する。"""
+        # 小計
+        self.subtotal = sum([sd.amount for sd in self.sale_details], start=Decimal("0"))
+        # 割引率
+        self.discount_rate = DiscountRateDeterminer.discount_rate(
+            self.customer, self.subtotal
+        )
+        # 円未満を切り捨てた割引額
+        self.discount_amount = (self.subtotal * self.discount_rate).quantize(
+            Decimal("0"), ROUND_DOWN
+        )
+        # 課税対象額
+        self.taxable_amount = self.subtotal - self.discount_amount
+        # 円未満を切り捨てた消費税額
+        self.consumption_tax_amount = (
+            self.taxable_amount * self.consumption_tax_rate
+        ).quantize(Decimal("0"), ROUND_DOWN)
+        # 合計
+        self.total = self.taxable_amount + self.consumption_tax_amount
+
+
+class DiscountRateDeterminer:
+    """割引率決定者"""
+
+    @classmethod
+    def discount_rate(cls, customer: Optional[Customer], subtotal: Decimal) -> Decimal:
+        """割引率を決定する。
+
+        - 会員でない場合の割引率は0%
+        - 一般会員で小計が3,000円未満の場合の割引率は5%、小計が3,000円以上の場合は10%
+        - 特別会員で小計が3,000円未満の場合の割引率は10%、小計が3,000円以上の場合は20%
+
+        Args:
+            customer (Optional[Customer]): 顧客
+            subtotal (Decimal): 小計
+
+        Returns:
+            Decimal: 割引率
+        """
+        if customer is None:
+            # 会員でない場合
+            return Decimal("0.0")
+        if customer.is_general_member():
+            # 一般会員の場合
+            if subtotal < Decimal("3000"):
+                # 小計が3,000円未満の場合
+                return Decimal("0.05")
+            else:
+                # 小計が3,000円以上の場合
+                return Decimal("0.10")
+        else:
+            # 特別会員の場合
+            if subtotal < Decimal("3000"):
+                # 小計が3,000円未満の場合
+                return Decimal("0.10")
+            else:
+                # 小計が3,000円以上の場合
+                return Decimal("0.20")
