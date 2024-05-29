@@ -53,6 +53,8 @@ def create_test_db() -> Tuple[sqlite3.Connection, str]:
     db_name = f"test_{uuid.uuid4()}.db3"
     db_path = os.path.join(DATABASE_DIR, db_name)
     conn = sqlite3.connect(db_path)
+    # 外部参照制約を有効化
+    conn.execute("PRAGMA foreign_keys = true")
     # テーブル作成SQL文を実行
     sql_path = os.path.join(SQL_DIR, "create_tables.sql")
     execute_sql_file(conn, sql_path)
