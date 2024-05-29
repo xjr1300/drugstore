@@ -17,9 +17,6 @@ def retrieve_applicable_consumption_tax_rate(
 
     Returns:
         Decimal: 売上に適用する消費税の税率
-
-    TODO: 次の単体テストを実装すること
-    - 売上に適用する消費税を正しく取得できることを確認
     """
     repo = repo_manager.consumption_tax()
     taxes = repo.list()
