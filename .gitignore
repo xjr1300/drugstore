@@ -38,3 +38,4 @@ venv/
 
 # resources
 resources/
+*.db3
