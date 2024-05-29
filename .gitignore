@@ -39,3 +39,4 @@ venv/
 # resources
 resources/
 *.db3
+tests/integration_tests/dbs/
