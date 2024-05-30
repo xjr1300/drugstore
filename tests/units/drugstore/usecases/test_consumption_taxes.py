@@ -15,7 +15,10 @@ from drugstore.usecases.consumption_taxes import (
     register_consumption_tax_and_save_list,
     retrieve_applicable_consumption_tax_rate,
 )
-from tests.drugstore.utils.test_consumption_tax_manager import THREE_CONSUMPTION_TAXES
+
+from tests.units.drugstore.utils.test_consumption_tax_manager import (
+    THREE_CONSUMPTION_TAXES,
+)
 
 
 def repository_manager_test_double() -> Tuple[MagicMock, MagicMock]:  # noqa: D103
