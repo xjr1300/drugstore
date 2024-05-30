@@ -24,6 +24,21 @@ def remove_test_dbs() -> None:
             print(f"can't remove {db_path}", file=sys.stderr)
 
 
+def execute_sql_file(conn: sqlite3.Connection, path: str) -> None:
+    """ファイルに記録されたSQL文をデータベースに実行する。
+
+    コミットしないため、この関数の呼び出し元でコミットまたはロールバックすること。
+
+    Args:
+        conn (sqlite3.Connection): データベース接続
+        path (str): SQLファイルのパス
+    """
+    with open(path, "rt") as sql_file:
+        sql_statements = sql_file.read()
+    cursor = conn.cursor()
+    cursor.executescript(sql_statements)
+
+
 def create_test_db() -> Tuple[sqlite3.Connection, str]:
     """テスト用データベースを作成する。
 
@@ -33,8 +48,6 @@ def create_test_db() -> Tuple[sqlite3.Connection, str]:
     """
     # テーブル作成SQL文を取得
     sql_path = os.path.join(SQL_DIR, "create_tables.sql")
-    with open(sql_path, "rt") as sql_file:
-        sql_statements = sql_file.read()
     # データベースを保存するディレクトリを作成
     if not os.path.isdir(DATABASE_DIR):
         os.makedirs(DATABASE_DIR)
@@ -42,8 +55,7 @@ def create_test_db() -> Tuple[sqlite3.Connection, str]:
     db_name = f"test_{uuid.uuid4()}.db3"
     db_path = os.path.join(DATABASE_DIR, db_name)
     conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
-    cursor.executescript(sql_statements)
+    execute_sql_file(conn, sql_path)
     conn.commit()
     return conn, db_path
 
