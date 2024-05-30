@@ -46,8 +46,6 @@ def create_test_db() -> Tuple[sqlite3.Connection, str]:
         Tuple[sqlite3.Connection, str]: データベース接続とデータベースのファイルパスを
             格納したタプル
     """
-    # テーブル作成SQL文を取得
-    sql_path = os.path.join(SQL_DIR, "create_tables.sql")
     # データベースを保存するディレクトリを作成
     if not os.path.isdir(DATABASE_DIR):
         os.makedirs(DATABASE_DIR)
@@ -55,7 +53,13 @@ def create_test_db() -> Tuple[sqlite3.Connection, str]:
     db_name = f"test_{uuid.uuid4()}.db3"
     db_path = os.path.join(DATABASE_DIR, db_name)
     conn = sqlite3.connect(db_path)
+    # テーブル作成SQL文を実行
+    sql_path = os.path.join(SQL_DIR, "create_tables.sql")
     execute_sql_file(conn, sql_path)
+    # 会員区分テーブルに行を挿入
+    sql_path = os.path.join(SQL_DIR, "insert_membership_type_rows.sql")
+    execute_sql_file(conn, sql_path)
+    # データベースをコミット
     conn.commit()
     return conn, db_path
 
