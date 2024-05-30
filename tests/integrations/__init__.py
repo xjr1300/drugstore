@@ -8,7 +8,7 @@ from typing import Tuple
 
 from termcolor import colored
 
-DATABASE_DIR = os.path.join(os.getcwd(), "tests", "integrations", "database")
+DATABASE_DIR = os.path.join(os.getcwd(), "tests", "integrations", "databases")
 
 SQL_DIR = os.path.join(os.getcwd(), "sql")
 
