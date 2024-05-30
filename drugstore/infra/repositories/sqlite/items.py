@@ -20,16 +20,7 @@ def item_from_row(row: Tuple[str, str, int]) -> Item:
 
 
 class ItemRepositoryImpl(ItemRepository):
-    """商品リポジトリ
-
-    TODO: 次の統合テストを実装すること。
-    - 商品のリストを取得できるか確認
-    - 有効な商品IDを指定したとき、商品を取得できるか確認
-    - 無効な商品IDを指定したとき、Noneが返されるか確認
-    - 商品を登録できるか確認
-    - 商品を更新できるか確認
-    - 商品を削除できるか確認
-    """
+    """商品リポジトリ"""
 
     def __init__(self, conn: sqlite3.Connection) -> None:
         """イニシャライザ"""
@@ -59,10 +50,7 @@ class ItemRepositoryImpl(ItemRepository):
             Optional[Item]: 商品、商品IDが一致する商品が存在しない場合はNone
         """
         sql = "SELECT id, name, unit_price FROM items WHERE id = ?"
-        cursor = self.conn.execute(
-            sql,
-            (str(id)),
-        )
+        cursor = self.conn.execute(sql, (str(id),))
         row = cursor.fetchone()
         if row:
             return item_from_row(row)
@@ -78,7 +66,11 @@ class ItemRepositoryImpl(ItemRepository):
         sql = "INSERT INTO items (id, name, unit_price) VALUES (?, ?, ?)"
         self.conn.execute(
             sql,
-            (str(item.id), item.name, int(item.unit_price)),
+            (
+                str(item.id),
+                item.name,
+                int(item.unit_price),
+            ),
         )
         self.conn.commit()
 
@@ -95,7 +87,11 @@ class ItemRepositoryImpl(ItemRepository):
             WHERE id = ?"""
         self.conn.execute(
             sql,
-            (item.name, int(item.unit_price), str(item.id)),
+            (
+                item.name,
+                int(item.unit_price),
+                str(item.id),
+            ),
         )
         self.conn.commit()
         pass
