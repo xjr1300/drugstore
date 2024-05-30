@@ -96,10 +96,15 @@ class IntegrationTestCase(unittest.TestCase):
     # データベースのパス
     db_path: str = ""
 
-    def setUp(self) -> None:  # noqa: D102
-        result = super().setUp()
+    @classmethod
+    def setUpClass(cls) -> None:  # noqa:D102
+        result = super().setUpClass()
         # テスト用データベースをすべて削除
         remove_test_dbs()
+        return result
+
+    def setUp(self) -> None:  # noqa: D102
+        result = super().setUp()
         # テースト用データベースを作成
         conn, db_path = create_test_db()
         # メンバ変数を設定
