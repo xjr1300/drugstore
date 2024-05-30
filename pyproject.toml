@@ -44,6 +44,9 @@ ignore = [
 
 extend-ignore = []
 
+[tool.ruff.format]
+skip-magic-trailing-comma = false
+
 [tool.ruff.lint.pydocstyle]
 # docstringはgoogle style
 convention = "google"
