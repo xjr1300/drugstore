@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS consumption_taxes (
     UNIQUE (begin_dt),
     UNIQUE (end_dt),
     CHECK (
-        rate >= 0.1
+        rate >= 0.0
         AND rate < 1.0
     )
 );
