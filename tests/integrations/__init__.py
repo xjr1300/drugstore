@@ -76,6 +76,19 @@ class IntegrationTestCase(unittest.TestCase):
     COMMITすると未処理のトランザクションをコミットして、トランザクションスタックを空にする。
     つまり、作成したSAVEPOINTがすべて削除され、コミット後はSAVEPOINTまでロールバックできない。
     よって、setUpでデータベースを作成して、tearDownでデータベースを削除するように実装した。
+
+    https://github.com/django/django/blob/02dab94c7b8585c7ae3854465574d768e1df75d3/django/db/backends/sqlite3/base.py#L225
+    When 'isolation_level' is not None, sqlite3 commits before each
+    savepoint; it's a bug. When it is None, savepoints don't make sense
+    because autocommit is enabled. The only exception is inside 'atomic'
+    blocks. To work around that bug, on SQLite, 'atomic' starts a
+    transaction explicitly rather than simply disable autocommit.
+    `isolation_level`がNoneでないとき、sqlite3は前のそれぞれのセーブポイントをコミットする。
+    これはバグである。`isolation_level`がNoneのとき、自動コミットが有効になるため、セーブポイントは
+    意味をなさない。このバグを回避するために、SQLiteにおいて、`atomic`は単に自動コミットを無効にする
+    よりも、明示的にトランザクションを開始する。
+
+    djangoに倣う場合、ORMを作成してトランザクションを制御する必要がある。
     """
 
     # データベース接続
