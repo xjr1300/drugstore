@@ -59,6 +59,9 @@ def create_test_db() -> Tuple[sqlite3.Connection, str]:
     # 会員区分テーブルに行を挿入
     sql_path = os.path.join(SQL_DIR, "insert_membership_type_rows.sql")
     execute_sql_file(conn, sql_path)
+    # 消費税テーブルに行を挿入
+    sql_path = os.path.join(SQL_DIR, "insert_consumption_tax_rows.sql")
+    execute_sql_file(conn, sql_path)
     # データベースをコミット
     conn.commit()
     return conn, db_path
