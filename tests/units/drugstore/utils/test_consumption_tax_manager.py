@@ -712,6 +712,46 @@ class ConsumptionTaxManagerTest(unittest.TestCase):
             )
         )
 
+    def test_consumption_taxes_are_merged_because_addition_occurs_continuous_rate(
+        self,
+    ) -> None:
+        """同じ税率の消費税が連続するように消費税を追加したとき、連続した消費税がマージされることを確認"""
+        taxes = copy.deepcopy(THREE_CONSUMPTION_TAXES)
+        sut = ConsumptionTaxManager(taxes)
+        addition = ConsumptionTax(
+            uuid.uuid4(),
+            jst_datetime(2024, 5, 1),
+            jst_datetime(2024, 5, 15),
+            Decimal("0.10"),
+        )
+
+        sut.add_consumption_tax(addition)
+
+        self.assertEqual(3, len(sut.consumption_taxes))
+
+    def test_consumption_taxes_are_merged_because_modifying_occurs_continuous_rate(
+        self,
+    ) -> None:
+        """同じ税率の消費税が連続するように消費税の税率を変更したとき、連続した消費税がマージされることを確認"""
+        taxes = copy.deepcopy(THREE_CONSUMPTION_TAXES)
+        sut = ConsumptionTaxManager(taxes)
+
+        sut.modify_consumption_tax_rate(taxes[1].id, Decimal("0.05"))
+
+        self.assertEqual(2, len(sut.consumption_taxes))
+
+    def test_consumption_taxes_are_merged_because_removing_occurs_continuous_rate(
+        self,
+    ) -> None:
+        """同じ税率の消費税が連続するように消費税を削除したとき、連続した消費税がマージされることを確認"""
+        taxes = copy.deepcopy(THREE_CONSUMPTION_TAXES)
+        taxes[2].rate = Decimal("0.05")
+        sut = ConsumptionTaxManager(taxes)
+
+        sut.remove_consumption_tax(taxes[1].id)
+
+        self.assertEqual(1, len(sut.consumption_taxes))
+
 
 def is_same_consumption_tax(
     tax: ConsumptionTax, begin: datetime, end: datetime, rate: Decimal
