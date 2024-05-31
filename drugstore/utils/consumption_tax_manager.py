@@ -141,6 +141,8 @@ class ConsumptionTaxManager:
             taxes = generate_consumption_taxes_for_overlapped_addition(
                 self.consumption_taxes, addition
             )
+        # 同じ消費税の税率が連続している場合、消費税をマージ
+        taxes = marge_consumption_tax_period(taxes)
         # 消費税リストメンバ変数を設定
         self.consumption_taxes = taxes
 
@@ -177,6 +179,8 @@ class ConsumptionTaxManager:
             raise ValueError("消費税IDが一致する消費税が消費税リストに存在しません。")
         # 消費税を変更
         target.rate = renewal
+        # 同じ消費税の税率が連続している場合、消費税をマージ
+        self.consumption_taxes = marge_consumption_tax_period(self.consumption_taxes)
 
     def remove_consumption_tax(self, id: uuid.UUID) -> None:
         """消費税IDで指定された消費税を消費税リストから削除する。
@@ -217,6 +221,8 @@ class ConsumptionTaxManager:
             self.consumption_taxes[index - 1].end = MAX_CONSUMPTION_TAX_END
         # 消費税を削除
         del self.consumption_taxes[index]
+        # 同じ消費税の税率が連続している場合、消費税をマージ
+        self.consumption_taxes = marge_consumption_tax_period(self.consumption_taxes)
 
 
 def retrieve_contained_consumption_tax_index(
@@ -320,4 +326,29 @@ def generate_consumption_taxes_for_overlapped_addition(
     taxes[0].begin = MIN_CONSUMPTION_TAX_BEGIN
     # 消費税リストの最後の消費税の終点日時を終点日時の最大値に設定
     taxes[-1].end = MAX_CONSUMPTION_TAX_END
+    return taxes
+
+
+def marge_consumption_tax_period(taxes: List[ConsumptionTax]) -> List[ConsumptionTax]:
+    """同じ消費税の税率が連続している場合、後の消費税の終点日時を前の消費税の終点日時に変更して、後の消費税を削除する。
+
+    Args:
+        taxes (List[ConsumptionTax]): 消費税リスト
+
+    Returns:
+        List[ConsumptionTax]: マージ後の消費税のリスト
+    """
+    number_of_taxes = len(taxes)
+    if number_of_taxes <= 1:
+        return taxes
+    index = 1
+    while index < number_of_taxes:
+        if taxes[index - 1].rate == taxes[index].rate:
+            """同じ消費税の税率が連続している"""
+            taxes[index - 1].end = taxes[index].end
+            del taxes[index]
+            number_of_taxes -= 1
+        else:
+            """同じ消費税の税率が連続していない"""
+            index += 1
     return taxes
