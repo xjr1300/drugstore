@@ -1,25 +1,17 @@
-import os
 import uuid
 
 from drugstore.domain.models.customers import Customer
 from drugstore.domain.models.membership_types import MembershipType
 from drugstore.infra.repositories.sqlite.customers import CustomerRepositoryImpl
 
-from tests.integrations import SQL_DIR, IntegrationTestCase, execute_sql_file
+from tests.integrations import IntegrationTestCase
 
 # sql/insert_customer_rows.sqlで登録した徳川家康の顧客ID
 IEYASU_CUSTOMER_ID = uuid.UUID("a67cd437-50fd-4667-a54e-5a5f09025359")
 
 
 class CustomerRepositoryImplTest(IntegrationTestCase):
-    """sqlite3の具象顧客リポジトリテスト"""
-
-    def setUp(self) -> None:  # noqa: D102
-        result = super().setUp()
-        sql_path = os.path.join(SQL_DIR, "insert_customer_rows.sql")
-        execute_sql_file(self.conn, sql_path)
-        self.conn.commit()
-        return result
+    """sqlite3の顧客リポジトリテスト"""
 
     def test_list(self) -> None:
         """顧客のリストを取得できることを確認"""

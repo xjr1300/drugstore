@@ -21,7 +21,7 @@ class SaleDetailTest(unittest.TestCase):
 
         sut = SaleDetail(id, item, quantities)
 
-        self.assertEqual(id, sut.id)
+        self.assertEqual(id, sut.sale_id)
         self.assertEqual(item.id, sut.item.id)
         self.assertEqual(item.name, sut.item.name)
         self.assertEqual(item.unit_price, sut.item.unit_price)
@@ -370,3 +370,15 @@ class SaleTest(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             sut.remove_sale_detail(uuid.uuid4())
+
+    def test_ensure_throw_exception_when_sale_detail_has_invalid_sale_id(self) -> None:
+        """追加する売上明細の売上IDが、追加先の売上の売上IDと一致しないときに、例外をスローすることを確認"""
+        customer = create_general_customer()
+        sold_at = jst_datetime(2024, 1, 1)
+        consumption_tax_rate = Decimal("0.1")
+        sut = Sale(customer, sold_at, consumption_tax_rate)
+
+        with self.assertRaises(ValueError):
+            sut.add_sale_detail(
+                create_vantelin_sale_detail(uuid.uuid4(), Decimal("1000"), 1)
+            )

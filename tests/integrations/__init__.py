@@ -53,14 +53,25 @@ def create_test_db() -> Tuple[sqlite3.Connection, str]:
     db_name = f"test_{uuid.uuid4()}.db3"
     db_path = os.path.join(DATABASE_DIR, db_name)
     conn = sqlite3.connect(db_path)
+    # 外部参照制約を有効化
+    conn.execute("PRAGMA foreign_keys = true")
     # テーブル作成SQL文を実行
     sql_path = os.path.join(SQL_DIR, "create_tables.sql")
+    execute_sql_file(conn, sql_path)
+    # 商品テーブルに行を挿入
+    sql_path = os.path.join(SQL_DIR, "insert_item_rows.sql")
     execute_sql_file(conn, sql_path)
     # 会員区分テーブルに行を挿入
     sql_path = os.path.join(SQL_DIR, "insert_membership_type_rows.sql")
     execute_sql_file(conn, sql_path)
+    # 顧客テーブルに行を挿入
+    sql_path = os.path.join(SQL_DIR, "insert_customer_rows.sql")
+    execute_sql_file(conn, sql_path)
     # 消費税テーブルに行を挿入
     sql_path = os.path.join(SQL_DIR, "insert_consumption_tax_rows.sql")
+    execute_sql_file(conn, sql_path)
+    # 売上、売上明細テーブルに行を挿入
+    sql_path = os.path.join(SQL_DIR, "insert_sale_rows.sql")
     execute_sql_file(conn, sql_path)
     # データベースをコミット
     conn.commit()
@@ -131,7 +142,7 @@ class IntegrationTestCaseTest(IntegrationTestCase):
         sql = "SELECT COUNT(*) FROM items"
         cursor = self.conn.execute(sql)
         result = cursor.fetchone()[0]
-        self.assertEqual(0, result)
+        self.assertEqual(3, result)
 
     def tearDown(self) -> None:  # noqa: D102
         result = super().tearDown()

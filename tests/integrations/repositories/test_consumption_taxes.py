@@ -54,7 +54,7 @@ INITIAL_CONSUMPTION_TAXES = [
 
 
 class ConsumptionTaxRepositoryImplTest(IntegrationTestCase):
-    """sqlite3の具象消費税リポジトリテスト"""
+    """sqlite3の消費税リポジトリテスト"""
 
     def test_list(self) -> None:
         """消費税リストを取得できることを確認"""
