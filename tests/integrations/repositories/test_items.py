@@ -11,7 +11,7 @@ SEIROGAN_ITEM_ID = uuid.UUID("6e0d4fbe-cafe-4af7-bc95-a564b5029322")
 
 
 class ItemRepositoryImplTest(IntegrationTestCase):
-    """sqlite3の具象商品リポジトリテスト"""
+    """sqlite3の商品リポジトリテスト"""
 
     def test_list(self) -> None:
         """商品のリストを取得できることを確認"""

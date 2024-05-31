@@ -11,7 +11,7 @@ IEYASU_CUSTOMER_ID = uuid.UUID("a67cd437-50fd-4667-a54e-5a5f09025359")
 
 
 class CustomerRepositoryImplTest(IntegrationTestCase):
-    """sqlite3の具象顧客リポジトリテスト"""
+    """sqlite3の顧客リポジトリテスト"""
 
     def test_list(self) -> None:
         """顧客のリストを取得できることを確認"""
