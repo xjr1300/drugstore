@@ -8,6 +8,7 @@ from datetime import datetime
 from decimal import Decimal
 from typing import List, Tuple
 
+from drugstore.common import JST
 from drugstore.domain.models.consumption_taxes import ConsumptionTax
 from drugstore.domain.repositories.consumption_taxes import ConsumptionTaxRepository
 
@@ -23,8 +24,8 @@ def consumption_tax_from_row(row: Tuple[str, str, str, int]) -> ConsumptionTax:
         ConsumptionTax: 消費税
     """
     id = uuid.UUID(row[0])
-    begin = datetime.fromisoformat(row[1])
-    end = datetime.fromisoformat(row[2])
+    begin = datetime.fromisoformat(row[1]).replace(tzinfo=JST)
+    end = datetime.fromisoformat(row[2]).replace(tzinfo=JST)
     rate = Decimal(row[3]) / 10_000
     return ConsumptionTax(id, begin, end, rate)
 
@@ -38,10 +39,10 @@ class ConsumptionTaxRepositoryImpl(ConsumptionTaxRepository):
         self.conn = conn
 
     def list(self) -> List[ConsumptionTax]:
-        """消費税のリストを返す。
+        """消費税リストを返す。
 
         Returns:
-            List[ConsumptionTax]: 消費税のリスト
+            List[ConsumptionTax]: 消費税リスト
         """
         sql = """
             SELECT id, begin_dt, end_dt, rate
@@ -55,10 +56,10 @@ class ConsumptionTaxRepositoryImpl(ConsumptionTaxRepository):
         return consumption_taxes
 
     def replace_list(self, consumption_taxes: List[ConsumptionTax]) -> None:
-        """消費税のリストを入れ替える。
+        """消費税リストを入れ替える。
 
         Args:
-            consumption_taxes (List[ConsumptionTax]): 消費税のリスト
+            consumption_taxes (List[ConsumptionTax]): 消費税リスト
         """
         sql = "DELETE FROM consumption_taxes"
         self.conn.execute(sql)

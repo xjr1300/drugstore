@@ -16,6 +16,9 @@ from drugstore.usecases.consumption_taxes import (
     retrieve_applicable_consumption_tax_rate,
 )
 
+from tests.units.drugstore.domain.models.test_consumption_taxes import (
+    is_same_consumption_tax_conditions,
+)
 from tests.units.drugstore.utils.test_consumption_tax_manager import (
     THREE_CONSUMPTION_TAXES,
 )
@@ -108,20 +111,3 @@ class ConsumptionTaxUsecaseTest(unittest.TestCase):
             for a, b in zip(expected_args, args)
         ]
         self.assertTrue(all(results))
-
-
-def is_same_consumption_tax_conditions(a: ConsumptionTax, b: ConsumptionTax) -> bool:
-    """消費税の起点日時、終点日時、税率が等しいか確認する。
-
-    Args:
-        a (ConsumptionTax): 消費税
-        b (ConsumptionTax): 消費税
-
-    Returns:
-        bool: 等しい場合はTrue、そうでない場合はFalse
-    """
-    if a.begin != b.begin:
-        return False
-    if a.end != b.end:
-        return False
-    return True if a.rate == b.rate else False
