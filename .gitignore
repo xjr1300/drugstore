@@ -38,3 +38,5 @@ venv/
 
 # resources
 resources/
+*.db3
+tests/integrations/databases/

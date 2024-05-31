@@ -8,6 +8,9 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.12"
 
+[tool.poetry.group.dev.dependencies]
+termcolor = "^2.4.0"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
@@ -40,6 +43,9 @@ ignore = [
 ]
 
 extend-ignore = []
+
+[tool.ruff.format]
+skip-magic-trailing-comma = false
 
 [tool.ruff.lint.pydocstyle]
 # docstringはgoogle style

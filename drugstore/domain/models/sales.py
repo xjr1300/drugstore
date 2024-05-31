@@ -15,7 +15,7 @@ class SaleDetail:
     """売上明細"""
 
     # 売上ID
-    id: uuid.UUID
+    sale_id: uuid.UUID
     # 商品
     item: Item
     # 数量
@@ -23,11 +23,11 @@ class SaleDetail:
     # 小計
     amount: Decimal
 
-    def __init__(self, id: uuid.UUID, item: Item, quantities: int) -> None:
+    def __init__(self, sale_id: uuid.UUID, item: Item, quantities: int) -> None:
         """イニシャライザ
 
         Args:
-            id: (uuid.UUID): 売上ID
+            sale_id: (uuid.UUID): 売上ID
             item (Item): 商品
             quantities (int): 数量
 
@@ -36,10 +36,23 @@ class SaleDetail:
         """
         if quantities <= 0:
             raise ValueError("販売明細の数量が0以下です。")
-        self.id = id
+        self.sale_id = sale_id
         self.item = item
         self.quantities = quantities
         self.amount = item.unit_price * quantities
+
+    def __eq__(self, value: object) -> bool:  # noqa: D105
+        # 値オブジェクトであるため、値の等価性で評価
+        if not isinstance(value, SaleDetail):
+            return False
+        if self.item != value.item:
+            return False
+        if self.quantities != value.quantities:
+            return False
+        return self.amount == value.amount
+
+    def __ne__(self, value: object) -> bool:  # noqa: D105
+        return self != value
 
 
 @dataclass
@@ -101,12 +114,37 @@ class Sale:
         self.consumption_tax_amount = Decimal("0")
         self.total = Decimal("0")
 
+    def __eq__(self, value: object) -> bool:
+        """売上IDで売上の等価性を確認する。
+
+        Args:
+            value (object): 比較するインスタンス
+
+        Returns:
+            bool: 売上IDが等しい場合はTrue、異なる場合はFalse
+        """
+        if not isinstance(value, Sale):
+            return False
+        return self.id == value.id
+
+    def __ne__(self, value: object) -> bool:  # noqa: D105
+        return self != value
+
     def add_sale_detail(self, sale_detail: SaleDetail) -> None:
         """売上に売上明細を追加する。
 
         Args:
             sale_detail (SaleDetail): 売上明細
+
+        Raises:
+            ValueError: 売上明細に記録されている売上IDが、追加する売上の売上IDと
+                異なります。
         """
+        # 追加する売上明細の売上IDが、この売上の売上IDと一致するか確認
+        if self.id != sale_detail.sale_id:
+            raise ValueError(
+                "売上明細に記録されている売上IDが、追加する売上の売上IDと異なります。"
+            )
         # 追加する売上明細の商品が、すでに登録されている売上明細の商品であるか確認
         func: Callable[[SaleDetail], bool] = lambda sd: sd.item == sale_detail.item
         existence = next(filter(func, self.sale_details), None)
