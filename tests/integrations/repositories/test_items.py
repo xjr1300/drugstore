@@ -1,11 +1,10 @@
-import os
 import uuid
 from decimal import Decimal
 
 from drugstore.domain.models.items import Item
 from drugstore.infra.repositories.sqlite.items import ItemRepositoryImpl
 
-from tests.integrations import SQL_DIR, IntegrationTestCase, execute_sql_file
+from tests.integrations import IntegrationTestCase
 
 # sql/insert_item_rows.sqlで登録した正露丸の商品ID
 SEIROGAN_ITEM_ID = uuid.UUID("6e0d4fbe-cafe-4af7-bc95-a564b5029322")
@@ -13,13 +12,6 @@ SEIROGAN_ITEM_ID = uuid.UUID("6e0d4fbe-cafe-4af7-bc95-a564b5029322")
 
 class ItemRepositoryImplTest(IntegrationTestCase):
     """sqlite3の具象商品リポジトリテスト"""
-
-    def setUp(self) -> None:  # noqa: D102
-        result = super().setUp()
-        sql_path = os.path.join(SQL_DIR, "insert_item_rows.sql")
-        execute_sql_file(self.conn, sql_path)
-        self.conn.commit()
-        return result
 
     def test_list(self) -> None:
         """商品のリストを取得できることを確認"""
