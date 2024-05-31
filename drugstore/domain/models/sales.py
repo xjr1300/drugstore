@@ -41,6 +41,19 @@ class SaleDetail:
         self.quantities = quantities
         self.amount = item.unit_price * quantities
 
+    def __eq__(self, value: object) -> bool:  # noqa: D105
+        # 値オブジェクトであるため、値の等価性で評価
+        if not isinstance(value, SaleDetail):
+            return False
+        if self.item != value.item:
+            return False
+        if self.quantities != value.quantities:
+            return False
+        return self.amount == value.amount
+
+    def __ne__(self, value: object) -> bool:  # noqa: D105
+        return self != value
+
 
 @dataclass
 class Sale:
@@ -100,6 +113,22 @@ class Sale:
         self.consumption_tax_rate = consumption_tax_rate
         self.consumption_tax_amount = Decimal("0")
         self.total = Decimal("0")
+
+    def __eq__(self, value: object) -> bool:
+        """売上IDで売上の等価性を確認する。
+
+        Args:
+            value (object): 比較するインスタンス
+
+        Returns:
+            bool: 売上IDが等しい場合はTrue、異なる場合はFalse
+        """
+        if not isinstance(value, Sale):
+            return False
+        return self.id == value.id
+
+    def __ne__(self, value: object) -> bool:  # noqa: D105
+        return self != value
 
     def add_sale_detail(self, sale_detail: SaleDetail) -> None:
         """売上に売上明細を追加する。
