@@ -179,3 +179,20 @@ class ConsumptionTaxTest(unittest.TestCase):
         for data in data_list:
             result = target.contains(data[1])
             self.assertEqual(data[0], result, f"{data[1].begin}, {data[1].end}")
+
+
+def is_same_consumption_tax_conditions(a: ConsumptionTax, b: ConsumptionTax) -> bool:
+    """消費税の起点日時、終点日時、税率が等しいか確認する。
+
+    Args:
+        a (ConsumptionTax): 消費税
+        b (ConsumptionTax): 消費税
+
+    Returns:
+        bool: 等しい場合はTrue、そうでない場合はFalse
+    """
+    if a.begin != b.begin:
+        return False
+    if a.end != b.end:
+        return False
+    return True if a.rate == b.rate else False

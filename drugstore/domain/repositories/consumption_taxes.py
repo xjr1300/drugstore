@@ -9,18 +9,18 @@ class ConsumptionTaxRepository(abc.ABC):
 
     @abc.abstractmethod
     def list(self) -> List[ConsumptionTax]:
-        """起点日時の種順で格納された消費税のリストを返す。
+        """起点日時の昇順で格納された消費税リストを返す。
 
         Returns:
-            List[ConsumptionTax]: 起点日時の昇順で格納された消費税のリスト
+            List[ConsumptionTax]: 起点日時の昇順で格納された消費税リスト
         """
         pass
 
     @abc.abstractmethod
     def replace_list(self, consumption_taxes: List[ConsumptionTax]) -> None:
-        """消費税のリストを入れ替える。
+        """消費税リストを入れ替える。
 
         Args:
-            consumption_taxes (List[ConsumptionTax]): 消費税のリスト
+            consumption_taxes (List[ConsumptionTax]): 消費税リスト
         """
         pass
