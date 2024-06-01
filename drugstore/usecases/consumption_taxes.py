@@ -33,10 +33,7 @@ def register_consumption_tax_and_save_list(
     Args:
         repo_manager (RepositoryManager): リポジトリマネージャー
         tax (ConsumptionTax): 追加する消費税
-
-    TODO: 次の単体テストを実装すること
-    - 消費税を消費税リストに追加して、消費税リストを入れ替えるメソッドが呼ばれたことを確認
-    """  # noqa: E501
+    """
     repo = repo_manager.consumption_tax()
     taxes = repo.list()
     tax_manager = ConsumptionTaxManager(taxes)

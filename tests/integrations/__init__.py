@@ -6,11 +6,10 @@ import uuid
 from glob import glob
 from typing import Tuple
 
+from drugstore import SQL_DIR, connect_to_database, execute_sql_file
 from termcolor import colored
 
 DATABASE_DIR = os.path.join(os.getcwd(), "tests", "integrations", "databases")
-
-SQL_DIR = os.path.join(os.getcwd(), "sql")
 
 
 def remove_test_dbs() -> None:
@@ -24,21 +23,6 @@ def remove_test_dbs() -> None:
             print(f"can't remove {db_path}", file=sys.stderr)
 
 
-def execute_sql_file(conn: sqlite3.Connection, path: str) -> None:
-    """ファイルに記録されたSQL文をデータベースに実行する。
-
-    コミットしないため、この関数の呼び出し元でコミットまたはロールバックすること。
-
-    Args:
-        conn (sqlite3.Connection): データベース接続
-        path (str): SQLファイルのパス
-    """
-    with open(path, "rt") as sql_file:
-        sql_statements = sql_file.read()
-    cursor = conn.cursor()
-    cursor.executescript(sql_statements)
-
-
 def create_test_db() -> Tuple[sqlite3.Connection, str]:
     """テスト用データベースを作成する。
 
@@ -46,36 +30,17 @@ def create_test_db() -> Tuple[sqlite3.Connection, str]:
         Tuple[sqlite3.Connection, str]: データベース接続とデータベースのファイルパスを
             格納したタプル
     """
-    # データベースを保存するディレクトリを作成
     if not os.path.isdir(DATABASE_DIR):
         os.makedirs(DATABASE_DIR)
-    # データベースを作成
-    db_name = f"test_{uuid.uuid4()}.db3"
-    db_path = os.path.join(DATABASE_DIR, db_name)
-    conn = sqlite3.connect(db_path)
-    # 外部参照制約を有効化
-    conn.execute("PRAGMA foreign_keys = true")
-    # テーブル作成SQL文を実行
-    sql_path = os.path.join(SQL_DIR, "create_tables.sql")
-    execute_sql_file(conn, sql_path)
-    # 商品テーブルに行を挿入
-    sql_path = os.path.join(SQL_DIR, "insert_item_rows.sql")
-    execute_sql_file(conn, sql_path)
-    # 会員区分テーブルに行を挿入
-    sql_path = os.path.join(SQL_DIR, "insert_membership_type_rows.sql")
-    execute_sql_file(conn, sql_path)
-    # 顧客テーブルに行を挿入
-    sql_path = os.path.join(SQL_DIR, "insert_customer_rows.sql")
-    execute_sql_file(conn, sql_path)
-    # 消費税テーブルに行を挿入
-    sql_path = os.path.join(SQL_DIR, "insert_consumption_tax_rows.sql")
-    execute_sql_file(conn, sql_path)
+    file_name = f"test_{uuid.uuid4()}.db3"
+    file_path = os.path.join(DATABASE_DIR, file_name)
+    conn = connect_to_database(file_path)
     # 売上、売上明細テーブルに行を挿入
     sql_path = os.path.join(SQL_DIR, "insert_sale_rows.sql")
     execute_sql_file(conn, sql_path)
-    # データベースをコミット
     conn.commit()
-    return conn, db_path
+
+    return conn, file_path
 
 
 class IntegrationTestCase(unittest.TestCase):

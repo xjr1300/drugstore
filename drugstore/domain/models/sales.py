@@ -84,6 +84,7 @@ class Sale:
 
     def __init__(
         self,
+        id: uuid.UUID,
         customer: Optional[Customer],
         sold_at: datetime,
         consumption_tax_rate: Decimal,
@@ -91,6 +92,7 @@ class Sale:
         """イニシャライザ
 
         Args:
+            id (uuid.UUID): 売上ID
             customer (Optional[Customer]): 顧客
             sold_at (datetime): 売上日時
             consumption_tax_rate (Decimal): 消費税率
@@ -103,7 +105,7 @@ class Sale:
             raise ValueError("売上日は日本標準時で指定してください。")
         if not validate_consumption_tax_rate(consumption_tax_rate):
             raise ValueError("消費税の税率が0.0未満または1.0以上です。")
-        self.id = uuid.uuid4()
+        self.id = id
         self.customer = customer
         self.sold_at = sold_at
         self.sale_details = []
@@ -165,12 +167,9 @@ class Sale:
             id (uuid.UUID): 削除する売上明細が持つ商品の商品ID
 
         Raises:
-            ValueError: 指定された商品IDで示される商品を売り上げた商品明細が存在しません。
-
-        TODO: 次の単体テストを実装すること
-        - 小計が3,000円以上ある売上から、売上明細が削除されて小計が3,000円未満になったとき、小計、割引率、割引額、課税対象額、消費税額、合計が正しいか確認
-        - 引数で指定された商品の売上明細が売上に存在しない場合に例外をスローするか確認
-        """  # noqa: E501
+            ValueError: 指定された商品IDで示される商品を売り上げた商品明細が
+                存在しません。
+        """
         # 引数で指定された商品IDで示される商品を売り上げた、売上明細が売上に
         # 登録されているか確認
         existences = [
