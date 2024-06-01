@@ -27,6 +27,7 @@ class ItemRepositoryImplTest(IntegrationTestCase):
 
         item = repo.by_id(SEIROGAN_ITEM_ID)
         self.assertIsNotNone(item)
+        # リンターからの警告を抑制するために型を制限
         if item is None:
             return
         self.assertEqual("正露丸", item.name)
@@ -49,6 +50,7 @@ class ItemRepositoryImplTest(IntegrationTestCase):
         registered = repo.by_id(item.id)
 
         self.assertIsNotNone(registered)
+        # リンターからの警告を抑制するために型を制限
         if registered is None:
             return
         self.assertEqual(item.id, registered.id)
@@ -64,6 +66,7 @@ class ItemRepositoryImplTest(IntegrationTestCase):
         updated = repo.by_id(item.id)
 
         self.assertIsNotNone(updated)
+        # リンターからの警告を抑制するために型を制限
         if updated is None:
             return
         self.assertEqual(item.id, updated.id)
