@@ -12,6 +12,7 @@ sdist/
 .coverage.*
 .cache
 coverage.xml
+htmlcov/
 
 # translations
 *.mo

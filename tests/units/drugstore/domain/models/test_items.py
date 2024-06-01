@@ -124,15 +124,3 @@ def create_bufferin(unit_price: Decimal) -> Item:
         Item: バファリンを表現する商品
     """
     return Item(uuid.uuid4(), "バファリン", unit_price)
-
-
-def create_vantelin(unit_price: Decimal) -> Item:
-    """バンテリンを作成する。
-
-    Args:
-        unit_price (Decimal): 単価
-
-    Returns:
-        Item: バンテリンを表現する商品
-    """
-    return Item(uuid.uuid4(), "バファリン", unit_price)

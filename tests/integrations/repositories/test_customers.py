@@ -27,6 +27,7 @@ class CustomerRepositoryImplTest(IntegrationTestCase):
 
         customer = repo.by_id(IEYASU_CUSTOMER_ID)
         self.assertIsNotNone(customer)
+        # リンターからの警告を抑制するために型を制限
         if customer is None:
             return
         self.assertEqual("徳川家康", customer.name)
@@ -51,6 +52,7 @@ class CustomerRepositoryImplTest(IntegrationTestCase):
         registered = repo.by_id(customer.id)
 
         self.assertIsNotNone(registered)
+        # リンターからの警告を抑制するために型を制限
         if registered is None:
             return
         self.assertEqual(customer.id, registered.id)
@@ -67,6 +69,7 @@ class CustomerRepositoryImplTest(IntegrationTestCase):
         updated = repo.by_id(customer.id)
 
         self.assertIsNotNone(updated)
+        # リンターからの警告を抑制するために型を制限
         if updated is None:
             return
         self.assertEqual(customer.id, updated.id)

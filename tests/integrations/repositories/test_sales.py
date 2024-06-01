@@ -105,7 +105,7 @@ class SaleRepositoryImplTest(IntegrationTestCase):
 
         # 検証
         self.assertIsNotNone(sale)
-        # リンターによる警告を抑制
+        # リンターからの警告を抑制するために型を制限
         if sale is None:
             return
         self._validate_sale(sale)
@@ -124,6 +124,7 @@ class SaleRepositoryImplTest(IntegrationTestCase):
         id = uuid.UUID("a16cbeba-f3cc-482a-9d41-194bd0a5f14a")
         sut = SaleRepositoryImpl(self.conn)
         expected = sut.by_id(id)
+        # リンターからの警告を抑制するために型を制限
         if expected is None:
             raise Exception("an unexpected error occurred")
         self.conn.execute("DELETE FROM sales")
@@ -133,7 +134,7 @@ class SaleRepositoryImplTest(IntegrationTestCase):
         actual = sut.by_id(expected.id)
 
         self.assertIsNotNone(actual)
-        # リンターによる警告を抑制
+        # リンターからの警告を抑制するために型を制限
         if actual is None:
             return
         self._validate_sale(actual)
