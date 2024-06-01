@@ -16,12 +16,12 @@ class ItemTest(unittest.TestCase):
         unit_price = Decimal("1000")
 
         # 実行
-        item = Item(id, name, unit_price)
+        sut = Item(id, name, unit_price)
 
         # 検証
-        self.assertEqual(id, item.id)
-        self.assertEqual(name, item.name)
-        self.assertEqual(1000, item.unit_price)
+        self.assertEqual(id, sut.id)
+        self.assertEqual(name, sut.name)
+        self.assertEqual(1000, sut.unit_price)
 
     def test_instantiate_item_by_removing_blank_chars_at_beginning_of_the_item_name(
         self,
@@ -33,10 +33,10 @@ class ItemTest(unittest.TestCase):
         unit_price = Decimal("1000")
 
         # 実行
-        item = Item(id, name, unit_price)
+        sut = Item(id, name, unit_price)
 
         # 検証
-        self.assertEqual("正露丸", item.name)
+        self.assertEqual("正露丸", sut.name)
 
     def test_instantiate_item_by_removing_blank_chars_at_both_end_of_the_item_name(
         self,
@@ -48,10 +48,10 @@ class ItemTest(unittest.TestCase):
         unit_price = Decimal("1000")
 
         # 実行
-        item = Item(id, name, unit_price)
+        sut = Item(id, name, unit_price)
 
         # 検証
-        self.assertEqual("正露丸", item.name)
+        self.assertEqual("正露丸", sut.name)
 
     def test_instantiate_item_by_removing_blank_chars_at_end_of_the_item_name(
         self,
@@ -63,10 +63,10 @@ class ItemTest(unittest.TestCase):
         unit_price = Decimal("1000")
 
         # 実行
-        item = Item(id, name, unit_price)
+        sut = Item(id, name, unit_price)
 
         # 検証
-        self.assertEqual("正露丸", item.name)
+        self.assertEqual("正露丸", sut.name)
 
     def test_can_not_instantiate_item_by_empty_item_name(self) -> None:
         """空文字列の商品名で商品を構築できないことを確認"""
