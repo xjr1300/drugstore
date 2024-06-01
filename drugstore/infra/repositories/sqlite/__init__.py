@@ -1,4 +1,3 @@
-# TODO: RepositoryManagerにDIするサンプルコードを実装
 import sqlite3
 
 from drugstore.domain.repositories import RepositoryManager

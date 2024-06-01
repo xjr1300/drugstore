@@ -24,6 +24,15 @@ def jst_datetime(
     return datetime(year, month, day, hour, minute, second, tzinfo=JST)
 
 
+def jst_now() -> datetime:
+    """日本標準時で現在日時を返す。
+
+    Returns:
+        datetime: 日本標準時の現在日時
+    """
+    return datetime.now(tz=JST)
+
+
 def is_jst_datetime(dt: datetime) -> bool:
     """日時が日本標準時か確認する。
 
