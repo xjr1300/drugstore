@@ -67,6 +67,7 @@ class RawSaleDetail:  # noqa: D101
         self.consumption_tax_rate = Decimal(row[10]) / 10_000
 
     def create_sale(self) -> Sale:  # noqa: D102
+        id = uuid.uuid4()
         customer = (
             Customer(
                 self.customer_id,
@@ -79,7 +80,7 @@ class RawSaleDetail:  # noqa: D101
             if self.customer_id
             else None
         )
-        sale = Sale(customer, self.sold_dt, self.consumption_tax_rate)
+        sale = Sale(id, customer, self.sold_dt, self.consumption_tax_rate)
         sale.id = self.sale_id
         return sale
 

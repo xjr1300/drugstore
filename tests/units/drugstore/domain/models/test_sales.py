@@ -43,11 +43,12 @@ class SaleInitializerTest(unittest.TestCase):
 
     def test_instantiate_by_valid_attrs(self) -> None:
         """妥当な引数でインスタンスを構築できることを確認"""
+        id = uuid.uuid4()
         customer = create_general_customer()
         sold_at = jst_datetime(2024, 1, 1)
         consumption_tax_rate = Decimal("0.1")
 
-        sut = Sale(customer, sold_at, consumption_tax_rate)
+        sut = Sale(id, customer, sold_at, consumption_tax_rate)
 
         self.assertEqual(customer, sut.customer)
         self.assertEqual(sold_at, sut.sold_at)
@@ -61,23 +62,25 @@ class SaleInitializerTest(unittest.TestCase):
 
     def test_can_not_instantiate_by_non_jst_datetimes(self) -> None:
         """売上日時が日本標準時以外のときに例外をスローすることを確認"""
+        id = uuid.uuid4()
         customer = create_general_customer()
         dts = [datetime(2024, 1, 1), datetime(2024, 1, 1, tzinfo=timezone.utc)]
         consumption_tax_rate = Decimal("0.1")
 
         with self.assertRaises(ValueError):
             for dt in dts:
-                _ = Sale(customer, dt, consumption_tax_rate)
+                _ = Sale(id, customer, dt, consumption_tax_rate)
 
     def test_can_not_instantiate_by_invalid_consumption_tax_rates(self) -> None:
         """消費税額がドメインで定められた範囲外の場合に、例外をスローすることを確認"""
+        id = uuid.uuid4()
         customer = create_general_customer()
         sold_at = jst_datetime(2024, 1, 1)
         rates = [Decimal("-0.01"), Decimal("1.0")]
 
         with self.assertRaises(ValueError):
             for rate in rates:
-                _ = Sale(customer, sold_at, rate)
+                _ = Sale(id, customer, sold_at, rate)
 
 
 def create_vantelin_sale_detail(
@@ -123,9 +126,10 @@ class GeneralCustomerSaleTest(unittest.TestCase):
 
     def test_ensure_overall_if_subtotal_of_sale_is_less_than_3000(self) -> None:
         """一般会員の売上の小計が3,000円未満のときに、小計、割引率、割引額、課税対象額、消費税額、合計が正しいか確認"""
+        id = uuid.uuid4()
         sold_at = jst_datetime(2024, 1, 1)
         consumption_tax_rate = Decimal("0.1")
-        sut = Sale(self.customer, sold_at, consumption_tax_rate)
+        sut = Sale(id, self.customer, sold_at, consumption_tax_rate)
 
         # 小計999円
         sut.add_sale_detail(create_vantelin_sale_detail(sut.id, Decimal("999"), 1))
@@ -142,9 +146,10 @@ class GeneralCustomerSaleTest(unittest.TestCase):
 
     def test_ensure_overall_if_subtotal_of_sale_is_3000(self) -> None:
         """一般会員の売上の小計が3,000円のときに、小計、割引率、割引額、課税対象額、消費税額、合計が正しいか確認"""
+        id = uuid.uuid4()
         sold_at = jst_datetime(2024, 1, 1)
         consumption_tax_rate = Decimal("0.1")
-        sut = Sale(self.customer, sold_at, consumption_tax_rate)
+        sut = Sale(id, self.customer, sold_at, consumption_tax_rate)
 
         # 小計1,000円
         sut.add_sale_detail(create_vantelin_sale_detail(sut.id, Decimal("1000"), 1))
@@ -161,9 +166,10 @@ class GeneralCustomerSaleTest(unittest.TestCase):
 
     def test_ensure_overall_if_subtotal_of_sale_is_greater_than_3000(self) -> None:
         """一般会員の売上の小計が3,000円より大きい、小計、割引率、割引額、課税対象額、消費税額、合計が正しいか確認"""
+        id = uuid.uuid4()
         sold_at = jst_datetime(2024, 1, 1)
         consumption_tax_rate = Decimal("0.1")
-        sut = Sale(self.customer, sold_at, consumption_tax_rate)
+        sut = Sale(id, self.customer, sold_at, consumption_tax_rate)
 
         # 小計1,001円
         sut.add_sale_detail(create_vantelin_sale_detail(sut.id, Decimal("1001"), 1))
@@ -190,9 +196,10 @@ class SpecialCustomerSaleTest(unittest.TestCase):
 
     def test_ensure_overall_if_subtotal_of_sale_is_less_than_3000(self) -> None:
         """特別会員の売上の小計が3,000円未満のときに、小計、割引率、割引額、課税対象額、消費税額、合計が正しいか確認"""
+        id = uuid.uuid4()
         sold_at = jst_datetime(2024, 1, 1)
         consumption_tax_rate = Decimal("0.1")
-        sut = Sale(self.customer, sold_at, consumption_tax_rate)
+        sut = Sale(id, self.customer, sold_at, consumption_tax_rate)
 
         # 小計999円
         sut.add_sale_detail(create_vantelin_sale_detail(sut.id, Decimal("999"), 1))
@@ -209,9 +216,10 @@ class SpecialCustomerSaleTest(unittest.TestCase):
 
     def test_ensure_overall_if_subtotal_of_sale_is_3000(self) -> None:
         """特別会員の売上の小計が3,000円のときに、小計、割引率、割引額、課税対象額、消費税額、合計が正しいか確認"""
+        id = uuid.uuid4()
         sold_at = jst_datetime(2024, 1, 1)
         consumption_tax_rate = Decimal("0.1")
-        sut = Sale(self.customer, sold_at, consumption_tax_rate)
+        sut = Sale(id, self.customer, sold_at, consumption_tax_rate)
 
         # 小計1,000円
         sut.add_sale_detail(create_vantelin_sale_detail(sut.id, Decimal("1000"), 1))
@@ -228,9 +236,10 @@ class SpecialCustomerSaleTest(unittest.TestCase):
 
     def test_ensure_overall_if_subtotal_of_sale_is_greater_than_3000(self) -> None:
         """特別会員の売上の小計が3,000円より大きい、小計、割引率、割引額、課税対象額、消費税額、合計が正しいか確認"""
+        id = uuid.uuid4()
         sold_at = jst_datetime(2024, 1, 1)
         consumption_tax_rate = Decimal("0.1")
-        sut = Sale(self.customer, sold_at, consumption_tax_rate)
+        sut = Sale(id, self.customer, sold_at, consumption_tax_rate)
 
         # 小計1,001円
         sut.add_sale_detail(create_vantelin_sale_detail(sut.id, Decimal("1001"), 1))
@@ -251,9 +260,10 @@ class NoneCustomerSaleTest(unittest.TestCase):
 
     def test_ensure_overall_if_subtotal_of_sale_is_less_than_3000(self) -> None:
         """非会員の売上の小計が3,000円未満のときに、小計、割引率、割引額、課税対象額、消費税額、合計が正しいか確認"""
+        id = uuid.uuid4()
         sold_at = jst_datetime(2024, 1, 1)
         consumption_tax_rate = Decimal("0.1")
-        sut = Sale(None, sold_at, consumption_tax_rate)
+        sut = Sale(id, None, sold_at, consumption_tax_rate)
 
         # 小計999円
         sut.add_sale_detail(create_vantelin_sale_detail(sut.id, Decimal("999"), 1))
@@ -270,9 +280,10 @@ class NoneCustomerSaleTest(unittest.TestCase):
 
     def test_ensure_overall_if_subtotal_of_sale_is_3000(self) -> None:
         """非会員の売上の小計が3,000円のときに、小計、割引率、割引額、課税対象額、消費税額、合計が正しいか確認"""
+        id = uuid.uuid4()
         sold_at = jst_datetime(2024, 1, 1)
         consumption_tax_rate = Decimal("0.1")
-        sut = Sale(None, sold_at, consumption_tax_rate)
+        sut = Sale(id, None, sold_at, consumption_tax_rate)
 
         # 小計1,000円
         sut.add_sale_detail(create_vantelin_sale_detail(sut.id, Decimal("1000"), 1))
@@ -289,9 +300,10 @@ class NoneCustomerSaleTest(unittest.TestCase):
 
     def test_ensure_overall_if_subtotal_of_sale_is_greater_than_3000(self) -> None:
         """非会員の売上の小計が3,000円より大きい、小計、割引率、割引額、課税対象額、消費税額、合計が正しいか確認"""
+        id = uuid.uuid4()
         sold_at = jst_datetime(2024, 1, 1)
         consumption_tax_rate = Decimal("0.1")
-        sut = Sale(None, sold_at, consumption_tax_rate)
+        sut = Sale(id, None, sold_at, consumption_tax_rate)
 
         # 小計1,001円
         sut.add_sale_detail(create_vantelin_sale_detail(sut.id, Decimal("1001"), 1))
@@ -314,10 +326,11 @@ class SaleTest(unittest.TestCase):
         self,
     ) -> None:
         """登録されている売上明細の商品と、同じ商品の売上明細を売上に追加したとき、登録されている売上明細が更新されることを確認"""
+        id = uuid.uuid4()
         customer = create_general_customer()
         sold_at = jst_datetime(2024, 1, 1)
         consumption_tax_rate = Decimal("0.1")
-        sut = Sale(customer, sold_at, consumption_tax_rate)
+        sut = Sale(id, customer, sold_at, consumption_tax_rate)
 
         sut.add_sale_detail(create_vantelin_sale_detail(sut.id, Decimal("1000"), 1))
         sut.add_sale_detail(create_vantelin_sale_detail(sut.id, Decimal("1000"), 1))
@@ -338,10 +351,11 @@ class SaleTest(unittest.TestCase):
         小計が3,000円以上ある売上から、売上明細が削除されて小計が3,000円未満になったとき、
         小計、割引率、割引額、課税対象額、消費税額、合計が正しいか確認する。
         """
+        id = uuid.uuid4()
         customer = create_general_customer()
         sold_at = jst_datetime(2024, 1, 1)
         consumption_tax_rate = Decimal("0.1")
-        sut = Sale(customer, sold_at, consumption_tax_rate)
+        sut = Sale(id, customer, sold_at, consumption_tax_rate)
         bufferin_sd = create_bufferin_sale_detail(sut.id, Decimal("600"), 1)
         sut.add_sale_detail(bufferin_sd)
         vantelin_sd = create_vantelin_sale_detail(sut.id, Decimal("2400"), 1)
@@ -361,10 +375,11 @@ class SaleTest(unittest.TestCase):
         self,
     ) -> None:
         """引数で指定された商品の売上明細が売上に存在しない場合に例外をスローするか確認"""
+        id = uuid.uuid4()
         customer = create_general_customer()
         sold_at = jst_datetime(2024, 1, 1)
         consumption_tax_rate = Decimal("0.1")
-        sut = Sale(customer, sold_at, consumption_tax_rate)
+        sut = Sale(id, customer, sold_at, consumption_tax_rate)
         bufferin_sd = create_bufferin_sale_detail(sut.id, Decimal("600"), 1)
         sut.add_sale_detail(bufferin_sd)
 
@@ -373,10 +388,11 @@ class SaleTest(unittest.TestCase):
 
     def test_ensure_throw_exception_when_sale_detail_has_invalid_sale_id(self) -> None:
         """追加する売上明細の売上IDが、追加先の売上の売上IDと一致しないときに、例外をスローすることを確認"""
+        id = uuid.uuid4()
         customer = create_general_customer()
         sold_at = jst_datetime(2024, 1, 1)
         consumption_tax_rate = Decimal("0.1")
-        sut = Sale(customer, sold_at, consumption_tax_rate)
+        sut = Sale(id, customer, sold_at, consumption_tax_rate)
 
         with self.assertRaises(ValueError):
             sut.add_sale_detail(

@@ -84,6 +84,7 @@ class Sale:
 
     def __init__(
         self,
+        id: uuid.UUID,
         customer: Optional[Customer],
         sold_at: datetime,
         consumption_tax_rate: Decimal,
@@ -91,6 +92,7 @@ class Sale:
         """イニシャライザ
 
         Args:
+            id (uuid.UUID): 売上ID
             customer (Optional[Customer]): 顧客
             sold_at (datetime): 売上日時
             consumption_tax_rate (Decimal): 消費税率
@@ -103,7 +105,7 @@ class Sale:
             raise ValueError("売上日は日本標準時で指定してください。")
         if not validate_consumption_tax_rate(consumption_tax_rate):
             raise ValueError("消費税の税率が0.0未満または1.0以上です。")
-        self.id = uuid.uuid4()
+        self.id = id
         self.customer = customer
         self.sold_at = sold_at
         self.sale_details = []
