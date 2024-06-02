@@ -79,3 +79,6 @@ CREATE TABLE IF NOT EXISTS sale_details (
     CONSTRAINT uq_sale_details_sale_id_item_id UNIQUE (sale_id, item_id),
     CONSTRAINT ck_sale_details_quantities CHECK (quantities >= 0) CONSTRAINT ck_sale_details_amount CHECK (amount > 0)
 );
+
+-- 売上明細テーブル売上IDインデックス
+CREATE INDEX IF NOT EXISTS idx_sale_details_sale_id ON sale_details (sale_id);
