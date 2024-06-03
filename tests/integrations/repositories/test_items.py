@@ -6,7 +6,9 @@ from drugstore.infra.repositories.sqlite.items import ItemRepositoryImpl
 
 from tests.integrations import IntegrationTestCase
 
-# sql/insert_item_rows.sqlで登録した正露丸の商品ID
+# sql/insert_item_rows.sqlで登録した商品ID
+BUFFERIN_ITEM_ID = uuid.UUID("0734980b-ca7e-4bf4-81df-39ac95920ce0")
+OTAISAN_ITEM_ID = uuid.UUID("ef2d7dab-02e7-4680-8e8e-55070f695d8b")
 SEIROGAN_ITEM_ID = uuid.UUID("6e0d4fbe-cafe-4af7-bc95-a564b5029322")
 
 
