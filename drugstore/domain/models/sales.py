@@ -41,19 +41,6 @@ class SaleDetail:
         self.quantities = quantities
         self.amount = item.unit_price * quantities
 
-    def __eq__(self, value: object) -> bool:  # noqa: D105
-        # 値オブジェクトであるため、値の等価性で評価
-        if not isinstance(value, SaleDetail):
-            return False
-        if self.item != value.item:
-            return False
-        if self.quantities != value.quantities:
-            return False
-        return self.amount == value.amount
-
-    def __ne__(self, value: object) -> bool:  # noqa: D105
-        return self != value
-
 
 @dataclass
 class Sale:
