@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, List, Optional, Self, Tuple
+from typing import List, Optional, Self, Tuple
 
 
 class MembershipTypeCode(Enum):

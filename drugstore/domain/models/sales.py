@@ -42,7 +42,6 @@ class SaleDetail:
         self.amount = item.unit_price * quantities
 
 
-@dataclass
 class Sale:
     """売上"""
 
