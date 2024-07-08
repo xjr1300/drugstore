@@ -25,6 +25,7 @@ class RepositoryManager(abc.ABC):
         Returns:
             ItemRepository: 商品リポジトリ
         """
+        pass
 
     @abc.abstractmethod
     def consumption_tax(self) -> ConsumptionTaxRepository:
@@ -42,3 +43,4 @@ class RepositoryManager(abc.ABC):
         Returns:
             SaleRepository: 売上リポジトリ
         """
+        pass

@@ -94,7 +94,6 @@ class ItemRepositoryImpl(ItemRepository):
             ),
         )
         self.conn.commit()
-        pass
 
     def delete(self, id: uuid.UUID) -> None:
         """商品を削除する。

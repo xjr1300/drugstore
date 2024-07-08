@@ -108,8 +108,8 @@ QUERY_RAW_SALE_DETAIL_SQL = """
     FROM sales s
     LEFT OUTER JOIN customers c ON s.customer_id = c.id
     LEFT OUTER JOIN membership_types m ON c.membership_type_code = m.code
-    INNER JOIN sale_details d ON d.sale_id = s.id
-    INNER JOIN items i ON i.id = d.item_id
+    INNER JOIN sale_details d ON s.id = d.sale_id
+    INNER JOIN items i ON d.item_id = i.id
 """
 
 
